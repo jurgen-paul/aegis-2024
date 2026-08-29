@@ -20,6 +20,7 @@ val AmbientWhiteMuted = Color(0xFF94A3B8)
 val AmbientWhiteSubtle = Color(0xFF64748B)
 
 val OperationalEmerald = Color(0xFF10B981)
+val OperationalEmeraldLight = Color(0xFF6EE7B7)
 val OperationalEmeraldGlow = Color(0x3310B981)
 val OperationalEmeraldDark = Color(0xFF059669)
 
@@ -30,9 +31,14 @@ val ContainmentCrimsonDark = Color(0xFFDC2626)
 val QuantumViolet = Color(0xFFA855F7)
 val QuantumVioletGlow = Color(0x33A855F7)
 val QuantumVioletLight = Color(0xFFC084FC)
+val QuantumVioletDark = Color(0xFF7E22CE)
 
 val SolarAmber = Color(0xFFFFB703)
 val SolarAmberGlow = Color(0x33FFB703)
+val SolarAmberDark = Color(0xFFD97706)
+
+val TextDimmed = Color(0xFF94A3B8)
+
 
 // 2024 Base Legacy vs 2045 Quantum Accents
 val LegacyMarineBlue = Color(0xFF1E3A8A)

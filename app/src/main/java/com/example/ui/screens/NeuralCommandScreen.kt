@@ -15,10 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.NeuralCommandEntity
+import com.example.ui.animation.QuantumVolumetricButton
+import com.example.ui.animation.volumetricQuantumGlass
+import com.example.ui.components.NeuralIntentRoutingDashboard
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.theme.*
@@ -33,10 +37,15 @@ fun NeuralCommandScreen(
     var promptInput by remember { mutableStateOf("") }
     var selectedDomain by remember { mutableStateOf("local.enclave.core") }
     var isCrossDomain by remember { mutableStateOf(false) }
+    var selectedSubTab by remember { mutableStateOf(0) } // 0: Intent Routing Topology & Diagnostics, 1: Intent Dispatch Studio
 
     val pendingConfirmation by viewModel.pendingConfirmation.collectAsState()
     val neuralCommands by viewModel.neuralCommands.collectAsState()
     val biometrics by viewModel.biometrics.collectAsState()
+    val intentStream by viewModel.neuralIntentStream.collectAsState()
+    val topologyNodes by viewModel.topologyNodes.collectAsState()
+    val selectedFilter by viewModel.selectedIntentFilter.collectAsState()
+
 
     val domainOptions = listOf(
         "local.enclave.core" to false,
@@ -158,7 +167,7 @@ fun NeuralCommandScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(top = 12.dp, bottom = 80.dp)
     ) {
         // Section Header
@@ -174,12 +183,12 @@ fun NeuralCommandScreen(
                 ) {
                     Column {
                         Text(
-                            text = "LAYER 2 • NEURAL INTENT ROUTER",
+                            text = "LAYER 2 • NEURAL INTENT ROUTING",
                             style = MaterialTheme.typography.labelMedium,
                             color = PhotonicCyanLight
                         )
                         Text(
-                            text = "Multi-Modal Intent & Gateways",
+                            text = "Cognitive Topology & Routing Hub",
                             style = MaterialTheme.typography.titleMedium,
                             color = AmbientWhite,
                             fontWeight = FontWeight.Bold
@@ -191,213 +200,259 @@ fun NeuralCommandScreen(
                         signalColor = OperationalEmerald
                     )
                 }
-            }
-        }
-
-        // Interactive Glass Input Pane
-        item {
-            QuantumGlassCard(
-                borderColor = PhotonicCyan.copy(alpha = 0.4f),
-                backgroundColor = SpaceCobaltGlassElevated
-            ) {
-                Text(
-                    text = "VOLUMETRIC GLASS INPUT SURFACE",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = PhotonicCyanLight,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = promptInput,
-                    onValueChange = { promptInput = it },
-                    placeholder = {
-                        Text(
-                            "Enter multi-modal neural intent (e.g. Execute zero-trust perimeter leak proof...)",
-                            color = AmbientWhiteSubtle,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PhotonicCyan,
-                        unfocusedBorderColor = SpaceCobaltGlassBorder,
-                        focusedTextColor = AmbientWhite,
-                        unfocusedTextColor = AmbientWhite,
-                        focusedContainerColor = SpaceCobaltDark,
-                        unfocusedContainerColor = SpaceCobaltDark
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Quick Prompt Templates
+                // Sub-View Mode Switcher
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SpaceCobaltDark)
+                        .border(1.dp, SpaceCobaltGlassBorder, RoundedCornerShape(8.dp))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     listOf(
-                        "Verify Enclave Lattice",
-                        "Sanitize Egress Telemetry",
-                        "Cross-Domain Sync"
-                    ).forEach { preset ->
+                        "TOPOLOGY & INTENT STREAM",
+                        "INTENT DISPATCH STUDIO"
+                    ).forEachIndexed { index, label ->
+                        val isSelected = selectedSubTab == index
                         Box(
                             modifier = Modifier
+                                .weight(1f)
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(SpaceCobaltGlass)
-                                .border(1.dp, SpaceCobaltGlassBorder, RoundedCornerShape(6.dp))
-                                .clickable { promptInput = preset }
-                                .padding(horizontal = 8.dp, vertical = 5.dp)
+                                .background(if (isSelected) PhotonicCyan.copy(alpha = 0.25f) else Color.Transparent)
+                                .border(
+                                    1.dp,
+                                    if (isSelected) PhotonicCyan else Color.Transparent,
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .clickable { selectedSubTab = index }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = preset,
+                                text = label,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = AmbientWhiteMuted
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) PhotonicCyan else AmbientWhiteMuted,
+                                fontSize = 10.sp
                             )
                         }
                     }
                 }
+            }
+        }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Target Domain Selection
-                Text(
-                    text = "TARGET DOMAIN ROUTING",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = PhotonicCyan,
-                    fontWeight = FontWeight.Bold
+        // Sub-Tab 0: Neural Intent Routing Diagnostic Dashboard
+        if (selectedSubTab == 0) {
+            item {
+                NeuralIntentRoutingDashboard(
+                    intentStream = intentStream,
+                    topologyNodes = topologyNodes,
+                    selectedFilter = selectedFilter,
+                    onSelectFilter = { viewModel.setSelectedIntentFilter(it) },
+                    onInjectIntent = { type, desc, risk ->
+                        viewModel.injectSimulatedIntentPattern(type, desc, risk)
+                    }
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+            }
+        } else {
+            // Sub-Tab 1: Interactive Glass Input Pane & Execution Ledger
+            item {
+                QuantumGlassCard(
+                    borderColor = PhotonicCyan.copy(alpha = 0.4f),
+                    backgroundColor = SpaceCobaltGlassElevated
+                ) {
+                    Text(
+                        text = "VOLUMETRIC GLASS INPUT SURFACE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PhotonicCyanLight,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    domainOptions.forEach { (domain, requiresCrossDomain) ->
-                        val isSelected = selectedDomain == domain
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) PhotonicCyan.copy(alpha = 0.15f) else SpaceCobaltSurface)
-                                .border(
-                                    1.dp,
-                                    if (isSelected) PhotonicCyan else SpaceCobaltGlassBorder,
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .clickable {
-                                    selectedDomain = domain
-                                    isCrossDomain = requiresCrossDomain
-                                }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isSelected) PhotonicCyan else AmbientWhiteSubtle)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = promptInput,
+                        onValueChange = { promptInput = it },
+                        placeholder = {
+                            Text(
+                                "Enter multi-modal neural intent (e.g. Execute zero-trust perimeter leak proof...)",
+                                color = AmbientWhiteSubtle,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PhotonicCyan,
+                            unfocusedBorderColor = SpaceCobaltGlassBorder,
+                            focusedTextColor = AmbientWhite,
+                            unfocusedTextColor = AmbientWhite,
+                            focusedContainerColor = SpaceCobaltDark,
+                            unfocusedContainerColor = SpaceCobaltDark
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Quick Prompt Templates
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(
+                            "Verify Enclave Lattice",
+                            "Sanitize Egress Telemetry",
+                            "Cross-Domain Sync"
+                        ).forEach { preset ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(SpaceCobaltGlass)
+                                    .border(1.dp, SpaceCobaltGlassBorder, RoundedCornerShape(6.dp))
+                                    .clickable { promptInput = preset }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                            ) {
                                 Text(
-                                    text = domain,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (isSelected) AmbientWhite else AmbientWhiteMuted,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                                )
-                            }
-
-                            if (requiresCrossDomain) {
-                                PhotonicBadge(
-                                    text = "CROSS-DOMAIN (NEURAL CONFIRM)",
-                                    signalColor = SolarAmber
-                                )
-                            } else {
-                                PhotonicBadge(
-                                    text = "ISOLATED",
-                                    signalColor = OperationalEmerald
+                                    text = preset,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = AmbientWhiteMuted
                                 )
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                // Submit Button
-                Button(
-                    onClick = {
-                        viewModel.submitNeuralCommand(
-                            prompt = promptInput.ifBlank { "Execute zero-trust state verification" },
-                            domain = selectedDomain,
-                            isCrossDomain = isCrossDomain
-                        )
-                        promptInput = ""
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isCrossDomain) SolarAmber else PhotonicCyan,
-                        contentColor = SpaceCobaltDark
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (isCrossDomain) Icons.Default.LockOpen else Icons.Default.Send,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    // Target Domain Selection
                     Text(
+                        text = "TARGET DOMAIN ROUTING",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PhotonicCyan,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        domainOptions.forEach { (domain, requiresCrossDomain) ->
+                            val isSelected = selectedDomain == domain
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) PhotonicCyan.copy(alpha = 0.15f) else SpaceCobaltSurface)
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) PhotonicCyan else SpaceCobaltGlassBorder,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable {
+                                        selectedDomain = domain
+                                        isCrossDomain = requiresCrossDomain
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isSelected) PhotonicCyan else AmbientWhiteSubtle)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = domain,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (isSelected) AmbientWhite else AmbientWhiteMuted,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                }
+
+                                if (requiresCrossDomain) {
+                                    PhotonicBadge(
+                                        text = "CROSS-DOMAIN (NEURAL CONFIRM)",
+                                        signalColor = SolarAmber
+                                    )
+                                } else {
+                                    PhotonicBadge(
+                                        text = "ISOLATED",
+                                        signalColor = OperationalEmerald
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Volumetric Interactive Action Button
+                    QuantumVolumetricButton(
                         text = if (isCrossDomain) "SUBMIT CROSS-DOMAIN (REQUIRES GATE)" else "EXECUTE NEURAL INTENT",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelLarge
+                        icon = if (isCrossDomain) Icons.Default.LockOpen else Icons.Default.Send,
+                        primaryColor = if (isCrossDomain) SolarAmber else PhotonicCyan,
+                        secondaryColor = OperationalEmerald,
+                        containerColor = SpaceCobaltSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            viewModel.submitNeuralCommand(
+                                prompt = promptInput.ifBlank { "Execute zero-trust state verification" },
+                                domain = selectedDomain,
+                                isCrossDomain = isCrossDomain
+                            )
+                            promptInput = ""
+                        }
                     )
                 }
             }
-        }
 
-        // Neural Execution History
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "NEURAL COMMAND EXECUTION LEDGER",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = PhotonicCyan,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${neuralCommands.size} ENTRIES",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AmbientWhiteSubtle
-                )
-            }
-        }
-
-        if (neuralCommands.isEmpty()) {
+            // Neural Execution History
             item {
-                QuantumGlassCard(
-                    borderColor = SpaceCobaltGlassBorder,
-                    backgroundColor = SpaceCobaltGlass
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "No neural commands executed yet. Submit an intent above to record verifiable transactions.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AmbientWhiteMuted
+                        text = "NEURAL COMMAND EXECUTION LEDGER",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = PhotonicCyan,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${neuralCommands.size} ENTRIES",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AmbientWhiteSubtle
                     )
                 }
             }
-        }
 
-        items(neuralCommands, key = { it.id }) { cmd ->
-            NeuralCommandItemCard(cmd)
+            if (neuralCommands.isEmpty()) {
+                item {
+                    QuantumGlassCard(
+                        borderColor = SpaceCobaltGlassBorder,
+                        backgroundColor = SpaceCobaltGlass
+                    ) {
+                        Text(
+                            text = "No neural commands executed yet. Submit an intent above to record verifiable transactions.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AmbientWhiteMuted
+                        )
+                    }
+                }
+            }
+
+            items(neuralCommands, key = { it.id }) { cmd ->
+                NeuralCommandItemCard(cmd)
+            }
         }
     }
 }
+
 
 @Composable
 fun NeuralCommandItemCard(cmd: NeuralCommandEntity) {

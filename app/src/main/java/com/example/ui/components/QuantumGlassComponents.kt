@@ -32,6 +32,7 @@ import com.example.model.AgentStatus
 import com.example.model.BiometricState
 import com.example.model.SubAgentThread
 import com.example.model.ThreatSeverity
+import com.example.ui.animation.*
 import com.example.ui.theme.*
 
 @Composable
@@ -41,6 +42,7 @@ fun QuantumGlassCard(
     backgroundColor: Color = SpaceCobaltGlass,
     elevation: Dp = 6.dp,
     shapeRadius: Dp = 16.dp,
+    enableVolumetricHover: Boolean = true,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -49,18 +51,18 @@ fun QuantumGlassCard(
         Modifier.clickable(onClick = onClick)
     } else Modifier
 
-    Box(
-        modifier = modifier
+    val volumetricModifier = if (enableVolumetricHover) {
+        Modifier.volumetricQuantumGlass(
+            shapeRadius = shapeRadius,
+            elevation = elevation,
+            primarySignalColor = borderColor,
+            secondarySignalColor = OperationalEmerald,
+            glassBackground = backgroundColor,
+            maxTiltAngle = 8f
+        )
+    } else {
+        Modifier
             .shadow(elevation, cardShape, ambientColor = borderColor.copy(alpha = 0.25f), spotColor = borderColor.copy(alpha = 0.35f))
-            .clip(cardShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        backgroundColor.copy(alpha = 0.95f),
-                        backgroundColor.copy(alpha = 0.70f)
-                    )
-                )
-            )
             .border(
                 width = 1.dp,
                 brush = Brush.linearGradient(
@@ -73,6 +75,20 @@ fun QuantumGlassCard(
                     end = Offset.Infinite
                 ),
                 shape = cardShape
+            )
+    }
+
+    Box(
+        modifier = modifier
+            .then(volumetricModifier)
+            .clip(cardShape)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        backgroundColor.copy(alpha = 0.95f),
+                        backgroundColor.copy(alpha = 0.70f)
+                    )
+                )
             )
             .then(clickableModifier)
             .padding(16.dp)
@@ -282,6 +298,7 @@ fun PhotonicBadge(
     text: String,
     signalColor: Color,
     icon: ImageVector? = null,
+    enablePulse: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -292,7 +309,14 @@ fun PhotonicBadge(
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (icon != null) {
+            if (enablePulse) {
+                PhotonicSignalPulseIndicator(
+                    signalColor = signalColor,
+                    size = 6.dp,
+                    pulseSpeedMs = 1500
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            } else if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,

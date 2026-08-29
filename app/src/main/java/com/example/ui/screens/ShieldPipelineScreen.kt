@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.ThreatIncidentEntity
+import com.example.ui.animation.QuantumVolumetricButton
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.theme.*
@@ -221,23 +222,17 @@ fun ShieldPipelineScreen(
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Button(
+                                QuantumVolumetricButton(
+                                    text = "INJECT",
+                                    icon = Icons.Default.BugReport,
+                                    primaryColor = ContainmentCrimson,
+                                    secondaryColor = SolarAmber,
+                                    containerColor = ContainmentCrimsonDark.copy(alpha = 0.6f),
+                                    shapeRadius = 8.dp,
                                     onClick = {
                                         viewModel.injectSimulatedThreat(threatKey, "untrusted.external.attacker")
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = ContainmentCrimson,
-                                        contentColor = AmbientWhite
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                    shape = RoundedCornerShape(6.dp)
-                                ) {
-                                    Text(
-                                        "INJECT",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                    }
+                                )
                             }
                         }
                     }

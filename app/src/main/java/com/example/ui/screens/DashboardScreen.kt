@@ -264,9 +264,9 @@ fun DashboardScreen(
         // 512-bit Post Quantum Key Summary Card
         item {
             QuantumGlassCard(
-                borderColor = QuantumViolet.copy(alpha = 0.4f),
+                borderColor = OperationalEmerald.copy(alpha = 0.5f),
                 backgroundColor = SpaceCobaltGlassElevated,
-                onClick = { onNavigateToTab(4) }
+                onClick = { viewModel.setEnclaveOverlayVisible(true) }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -277,7 +277,7 @@ fun DashboardScreen(
                         Icon(
                             imageVector = Icons.Default.VpnKey,
                             contentDescription = "PQ Key",
-                            tint = QuantumVioletLight,
+                            tint = OperationalEmeraldLight,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -285,7 +285,7 @@ fun DashboardScreen(
                             Text(
                                 text = "512-BIT POST-QUANTUM KEY ENCLAVE",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = QuantumVioletLight,
+                                color = OperationalEmeraldLight,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
@@ -297,8 +297,9 @@ fun DashboardScreen(
                     }
 
                     PhotonicBadge(
-                        text = "ROTATING IN ${enclaveKey.rotationRemainingSec}s",
-                        signalColor = SolarAmber
+                        text = "VIEW HUD OVERLAY",
+                        signalColor = OperationalEmerald,
+                        icon = Icons.Default.DashboardCustomize
                     )
                 }
 
@@ -313,9 +314,9 @@ fun DashboardScreen(
                         color = AmbientWhiteMuted
                     )
                     Text(
-                        text = "ADDR: ${enclaveKey.memoryAddress}",
+                        text = "RE-KEY: ${enclaveKey.rotationRemainingSec}s",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AmbientWhiteSubtle
+                        color = OperationalEmerald
                     )
                 }
             }

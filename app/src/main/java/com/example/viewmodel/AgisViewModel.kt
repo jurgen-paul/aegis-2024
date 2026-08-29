@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
 import com.example.model.*
+import com.example.security.BiometricCredentialAuthManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
@@ -22,10 +23,12 @@ import kotlin.random.Random
 class AgisViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: AgisRepository
+    private val authManager: BiometricCredentialAuthManager
 
     init {
         val db = AgisDatabase.getDatabase(application)
         repository = AgisRepository(db.agisDao())
+        authManager = BiometricCredentialAuthManager(application)
     }
 
     // Biometrics State
@@ -118,12 +121,116 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
     private val _systemAlertMessage = MutableStateFlow<String?>(null)
     val systemAlertMessage: StateFlow<String?> = _systemAlertMessage.asStateFlow()
 
+    // Enclave 512-bit PQ Status Overlay Visibility
+    private val _isEnclaveOverlayVisible = MutableStateFlow(false)
+    val isEnclaveOverlayVisible: StateFlow<Boolean> = _isEnclaveOverlayVisible.asStateFlow()
+
+    // Lattice Integrity Check Status
+    private val _isLatticeVerifying = MutableStateFlow(false)
+    val isLatticeVerifying: StateFlow<Boolean> = _isLatticeVerifying.asStateFlow()
+
+    // Real-time Neural Intent Routing Stream State
+    private val _neuralIntentStream = MutableStateFlow<List<NeuralIntentPattern>>(getInitialIntentStream())
+    val neuralIntentStream: StateFlow<List<NeuralIntentPattern>> = _neuralIntentStream.asStateFlow()
+
+    private val _selectedIntentFilter = MutableStateFlow("ALL")
+    val selectedIntentFilter: StateFlow<String> = _selectedIntentFilter.asStateFlow()
+
+    private val _topologyNodes = MutableStateFlow(getInitialTopologyNodes())
+    val topologyNodes: StateFlow<List<NeuralTopologyNode>> = _topologyNodes.asStateFlow()
+
     init {
         startTelemetryLoop()
         startKeyRotationLoop()
+        startIntentPatternStreamLoop()
         seedInitialTelemetry()
         sanitizeRawTelemetry(_rawTelemetryInput.value)
     }
+
+    private fun startIntentPatternStreamLoop() {
+        viewModelScope.launch {
+            val sampleIntents = listOf(
+                Triple("ENCLAVE_READ", "Gated Read on Kyber-1024 Vault", IntentRiskLevel.ELEVATED),
+                Triple("SUB_AGENT_DISPATCH", "Parallel Execution Dispatch to Agent-Beta", IntentRiskLevel.SAFE),
+                Triple("CROSS_DOMAIN_MUTATION", "State Write Across Sandbox Boundary", IntentRiskLevel.RESTRICTED),
+                Triple("TELEMETRY_PII_PURGE", "Differential Privacy Sanitization Filter", IntentRiskLevel.SAFE),
+                Triple("ZERO_TRUST_ATTESTATION", "Biometric Hardware Key Verification", IntentRiskLevel.SAFE),
+                Triple("ANOMALY_PROBE", "Out-of-Distribution Token Gradient Check", IntentRiskLevel.ELEVATED)
+            )
+
+            val nodes = listOf("OPERATOR_NEURAL_HUB", "AGENT_ALPHA_ROUTER", "AGENT_BETA_ISOLATOR", "ENCLAVE_PQ_VAULT", "ORACLE_VALIDATOR")
+
+            while (isActive) {
+                delay(2200)
+                val sample = sampleIntents[Random.nextInt(sampleIntents.size)]
+                val src = nodes[Random.nextInt(nodes.size)]
+                var tgt = nodes[Random.nextInt(nodes.size)]
+                while (tgt == src) {
+                    tgt = nodes[Random.nextInt(nodes.size)]
+                }
+
+                val confidence = 0.88f + (Random.nextFloat() * 0.11f)
+                val entropy = 0.05f + (Random.nextFloat() * 0.15f)
+                val latency = 2 + Random.nextInt(9)
+                val hash = "0x" + UUID.randomUUID().toString().replace("-", "").take(8).uppercase()
+
+                val newPattern = NeuralIntentPattern(
+                    id = "INTENT-" + (1000 + Random.nextInt(9000)),
+                    timestamp = System.currentTimeMillis(),
+                    sourceNode = src,
+                    targetNode = tgt,
+                    intentType = sample.first,
+                    classification = sample.second,
+                    confidenceScore = String.format(Locale.US, "%.3f", confidence).toFloat(),
+                    entropyDelta = String.format(Locale.US, "%.2f", entropy).toFloat(),
+                    latencyMs = latency,
+                    riskLevel = sample.third,
+                    synchronicHash = hash
+                )
+
+                _neuralIntentStream.value = listOf(newPattern) + _neuralIntentStream.value.take(24)
+
+                // Update node traffic
+                _topologyNodes.value = _topologyNodes.value.map { node ->
+                    if (node.nodeId == src || node.nodeId == tgt) {
+                        node.copy(activeTrafficRate = (node.activeTrafficRate + (Random.nextFloat() * 8f)).coerceIn(12f, 98f))
+                    } else {
+                        node.copy(activeTrafficRate = (node.activeTrafficRate * 0.94f).coerceAtLeast(8f))
+                    }
+                }
+            }
+        }
+    }
+
+    fun setSelectedIntentFilter(filter: String) {
+        _selectedIntentFilter.value = filter
+    }
+
+    fun injectSimulatedIntentPattern(type: String, classification: String, risk: IntentRiskLevel) {
+        viewModelScope.launch {
+            val src = "OPERATOR_NEURAL_HUB"
+            val tgt = if (risk == IntentRiskLevel.RESTRICTED) "ENCLAVE_PQ_VAULT" else "AGENT_ALPHA_ROUTER"
+            val pattern = NeuralIntentPattern(
+                id = "INTENT-INJECT-" + (100 + Random.nextInt(900)),
+                timestamp = System.currentTimeMillis(),
+                sourceNode = src,
+                targetNode = tgt,
+                intentType = type,
+                classification = classification,
+                confidenceScore = 0.994f,
+                entropyDelta = 0.08f,
+                latencyMs = 3,
+                riskLevel = risk,
+                synchronicHash = "0x" + UUID.randomUUID().toString().replace("-", "").take(8).uppercase(),
+                activeState = "MANUALLY_INJECTED_ROUTED"
+            )
+
+            _neuralIntentStream.value = listOf(pattern) + _neuralIntentStream.value.take(24)
+            _systemAlertMessage.value = "⚡ Real-time Intent Pattern [$type] Dispatched & Routed"
+            vibrate(40)
+        }
+    }
+
 
     private fun startTelemetryLoop() {
         viewModelScope.launch {
@@ -189,6 +296,79 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
         sanitizeRawTelemetry(input)
     }
 
+    fun authenticateEnclaveWithCredentialManager(activityContext: Context) {
+        viewModelScope.launch {
+            _enclaveKey.value = _enclaveKey.value.copy(lockState = EnclaveLockState.AUTHENTICATING)
+            vibrate(30)
+
+            when (val result = authManager.authenticateForEnclaveAccess(activityContext)) {
+                is BiometricCredentialAuthManager.AuthResult.Success -> {
+                    val attestation = BiometricAttestationDetails(
+                        credentialType = result.credentialType,
+                        attestationToken = result.attestationToken,
+                        biometricStrength = result.biometricStrength,
+                        hardwareSecurityModule = result.hardwareSecurityModule,
+                        verifiedTimestamp = result.timestamp
+                    )
+                    _enclaveKey.value = _enclaveKey.value.copy(
+                        lockState = EnclaveLockState.UNLOCKED,
+                        attestationDetails = attestation,
+                        activeState = "HARDWARE_UNLOCKED_BIOMETRIC_ATTESTED"
+                    )
+                    _systemAlertMessage.value = "✅ Biometric Attestation Verified via Android Credential Manager."
+
+                    repository.insertAuditLog(
+                        AuditLogEntity(
+                            eventType = "ENCLAVE_BIOMETRIC_UNLOCKED",
+                            securityTier = "TIER-0 (Post-Quantum Enclave)",
+                            summary = "512-bit enclave storage unlocked via Android Credential Manager (${result.credentialType}). Strength: ${result.biometricStrength}.",
+                            cryptographicProof = "BIO_PROOF_" + result.attestationToken,
+                            subAgentId = "CREDENTIAL-MGR-0"
+                        )
+                    )
+                    vibrate(70)
+                }
+                is BiometricCredentialAuthManager.AuthResult.Error -> {
+                    _enclaveKey.value = _enclaveKey.value.copy(
+                        lockState = if (result.isCancelled) EnclaveLockState.LOCKED else EnclaveLockState.DENIED
+                    )
+                    _systemAlertMessage.value = "⚠️ " + result.message
+
+                    repository.insertAuditLog(
+                        AuditLogEntity(
+                            eventType = if (result.isCancelled) "ENCLAVE_AUTH_CANCELLED" else "ENCLAVE_AUTH_DENIED",
+                            securityTier = "TIER-0 (Zero-Trust Gate)",
+                            summary = "Enclave biometric challenge outcome: ${result.message}",
+                            cryptographicProof = "AUTH_FAIL_" + UUID.randomUUID().toString().take(8),
+                            subAgentId = "CREDENTIAL-MGR-0"
+                        )
+                    )
+                    vibrate(120)
+                }
+            }
+        }
+    }
+
+    fun lockEnclaveStorage() {
+        viewModelScope.launch {
+            _enclaveKey.value = _enclaveKey.value.copy(
+                lockState = EnclaveLockState.LOCKED,
+                activeState = "SEALED_HARDWARE_BOUND"
+            )
+            _systemAlertMessage.value = "🔒 512-bit Post-Quantum Enclave storage is now sealed."
+            repository.insertAuditLog(
+                AuditLogEntity(
+                    eventType = "ENCLAVE_MANUALLY_SEALED",
+                    securityTier = "TIER-0 (Post-Quantum Enclave)",
+                    summary = "Operator manually locked 512-bit post-quantum storage enclave. Hardware keys sealed.",
+                    cryptographicProof = "SEAL_TOKEN_" + UUID.randomUUID().toString().take(8),
+                    subAgentId = "SECURITY-MONITOR"
+                )
+            )
+            vibrate(40)
+        }
+    }
+
     fun rotateEnclaveKey() {
         viewModelScope.launch {
             val hex = UUID.randomUUID().toString().replace("-", "").uppercase().take(12)
@@ -209,6 +389,37 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
                 )
             )
             vibrate(40)
+        }
+    }
+
+    fun setEnclaveOverlayVisible(visible: Boolean) {
+        _isEnclaveOverlayVisible.value = visible
+        vibrate(25)
+    }
+
+    fun toggleEnclaveOverlay() {
+        _isEnclaveOverlayVisible.value = !_isEnclaveOverlayVisible.value
+        vibrate(30)
+    }
+
+    fun runLatticeIntegrityScan() {
+        viewModelScope.launch {
+            if (_isLatticeVerifying.value) return@launch
+            _isLatticeVerifying.value = true
+            vibrate(40)
+            delay(1400)
+            _isLatticeVerifying.value = false
+            _systemAlertMessage.value = "🛡️ 512-bit PQ Lattice & Dilithium-5 integrity verified (0 bit-flips / Zero Entropy Leak)."
+            repository.insertAuditLog(
+                AuditLogEntity(
+                    eventType = "PQ_LATTICE_INTEGRITY_SCAN",
+                    securityTier = "TIER-0 (Post-Quantum Enclave)",
+                    summary = "512-bit Kyber-1024 polynomial lattice vectors scanned for quantum decoherence and bit-drift. Status: 100% Coherent.",
+                    cryptographicProof = "LATTICE_PROOF_0x" + UUID.randomUUID().toString().take(8).uppercase(),
+                    subAgentId = "ORACLE-INTEGRITY-CORE"
+                )
+            )
+            vibrate(60)
         }
     }
 
@@ -567,4 +778,108 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
     }
+
+    private fun getInitialIntentStream(): List<NeuralIntentPattern> {
+        return listOf(
+            NeuralIntentPattern(
+                id = "INTENT-8841",
+                timestamp = System.currentTimeMillis() - 3200,
+                sourceNode = "OPERATOR_NEURAL_HUB",
+                targetNode = "AGENT_ALPHA_ROUTER",
+                intentType = "SUB_AGENT_DISPATCH",
+                classification = "Parallel Sub-Agent Task Allocation",
+                confidenceScore = 0.982f,
+                entropyDelta = 0.08f,
+                latencyMs = 3,
+                riskLevel = IntentRiskLevel.SAFE,
+                synchronicHash = "0x89E1A472"
+            ),
+            NeuralIntentPattern(
+                id = "INTENT-8840",
+                timestamp = System.currentTimeMillis() - 7100,
+                sourceNode = "OPERATOR_NEURAL_HUB",
+                targetNode = "ENCLAVE_PQ_VAULT",
+                intentType = "ENCLAVE_READ",
+                classification = "Gated Read on Kyber-1024 Vault",
+                confidenceScore = 0.941f,
+                entropyDelta = 0.14f,
+                latencyMs = 7,
+                riskLevel = IntentRiskLevel.ELEVATED,
+                synchronicHash = "0x3F02B9D1"
+            ),
+            NeuralIntentPattern(
+                id = "INTENT-8839",
+                timestamp = System.currentTimeMillis() - 12400,
+                sourceNode = "AGENT_BETA_ISOLATOR",
+                targetNode = "ORACLE_VALIDATOR",
+                intentType = "ZERO_TRUST_ATTESTATION",
+                classification = "Biometric Hardware Key Verification",
+                confidenceScore = 0.996f,
+                entropyDelta = 0.04f,
+                latencyMs = 2,
+                riskLevel = IntentRiskLevel.SAFE,
+                synchronicHash = "0x5A18E80C"
+            ),
+            NeuralIntentPattern(
+                id = "INTENT-8838",
+                timestamp = System.currentTimeMillis() - 19200,
+                sourceNode = "OPERATOR_NEURAL_HUB",
+                targetNode = "AGENT_BETA_ISOLATOR",
+                intentType = "CROSS_DOMAIN_MUTATION",
+                classification = "Cross-Domain Gate Validation Request",
+                confidenceScore = 0.895f,
+                entropyDelta = 0.22f,
+                latencyMs = 9,
+                riskLevel = IntentRiskLevel.RESTRICTED,
+                synchronicHash = "0x77C390FE"
+            )
+        )
+    }
+
+    private fun getInitialTopologyNodes(): List<NeuralTopologyNode> {
+        return listOf(
+            NeuralTopologyNode(
+                nodeId = "OPERATOR_NEURAL_HUB",
+                label = "Operator Hub",
+                role = "Primary Cognitive Ingress",
+                normalizedX = 0.50f,
+                normalizedY = 0.16f,
+                activeTrafficRate = 64.2f,
+                isPrimaryCore = true
+            ),
+            NeuralTopologyNode(
+                nodeId = "AGENT_ALPHA_ROUTER",
+                label = "Alpha Router",
+                role = "Intent Parsing & Sandbox Orchestrator",
+                normalizedX = 0.18f,
+                normalizedY = 0.52f,
+                activeTrafficRate = 48.6f
+            ),
+            NeuralTopologyNode(
+                nodeId = "AGENT_BETA_ISOLATOR",
+                label = "Beta Isolator",
+                role = "Cross-Domain Boundary Enforcer",
+                normalizedX = 0.82f,
+                normalizedY = 0.52f,
+                activeTrafficRate = 32.4f
+            ),
+            NeuralTopologyNode(
+                nodeId = "ENCLAVE_PQ_VAULT",
+                label = "PQ Enclave",
+                role = "512-bit Hardware Kyber Vault",
+                normalizedX = 0.28f,
+                normalizedY = 0.86f,
+                activeTrafficRate = 22.0f
+            ),
+            NeuralTopologyNode(
+                nodeId = "ORACLE_VALIDATOR",
+                label = "Oracle Proofs",
+                role = "Deterministic Build Validator",
+                normalizedX = 0.72f,
+                normalizedY = 0.86f,
+                activeTrafficRate = 18.5f
+            )
+        )
+    }
 }
+

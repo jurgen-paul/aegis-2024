@@ -14,10 +14,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.AuditLogEntity
+import com.example.model.EnclaveLockState
+import com.example.ui.animation.PhotonicSignalPulseIndicator
+import com.example.ui.animation.QuantumVolumetricButton
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.theme.*
@@ -29,9 +34,12 @@ import java.util.*
 fun EnclaveVaultScreen(
     viewModel: AgisViewModel
 ) {
+    val context = LocalContext.current
     val enclaveKey by viewModel.enclaveKey.collectAsState()
     val auditLogs by viewModel.auditLogs.collectAsState()
     var selectedFilter by remember { mutableStateOf("ALL") }
+
+    val isUnlocked = enclaveKey.lockState == EnclaveLockState.UNLOCKED
 
     val filteredLogs = remember(auditLogs, selectedFilter) {
         if (selectedFilter == "ALL") auditLogs
@@ -48,7 +56,7 @@ fun EnclaveVaultScreen(
         // Section Header
         item {
             QuantumGlassCard(
-                borderColor = QuantumViolet.copy(alpha = 0.4f),
+                borderColor = if (isUnlocked) OperationalEmerald.copy(alpha = 0.5f) else SpaceCobaltGlassBorder,
                 backgroundColor = SpaceCobaltCard
             ) {
                 Row(
@@ -60,10 +68,10 @@ fun EnclaveVaultScreen(
                         Text(
                             text = "LAYER 5 • POST-QUANTUM ENCLAVE",
                             style = MaterialTheme.typography.labelMedium,
-                            color = QuantumVioletLight
+                            color = if (isUnlocked) OperationalEmeraldLight else PhotonicCyanLight
                         )
                         Text(
-                            text = "512-bit PQ Dynamic Key Vault",
+                            text = "512-bit PQ Storage Enclave",
                             style = MaterialTheme.typography.titleMedium,
                             color = AmbientWhite,
                             fontWeight = FontWeight.Bold
@@ -71,18 +79,166 @@ fun EnclaveVaultScreen(
                     }
 
                     PhotonicBadge(
-                        text = "DUAL ISOLATED",
-                        signalColor = QuantumVioletLight,
-                        icon = Icons.Default.EnhancedEncryption
+                        text = if (isUnlocked) "BIOMETRIC ATTESTED" else "BIOMETRICALLY LOCKED",
+                        signalColor = if (isUnlocked) OperationalEmerald else SolarAmber,
+                        icon = if (isUnlocked) Icons.Default.VerifiedUser else Icons.Default.Lock,
+                        enablePulse = isUnlocked
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Launch Status HUD Overlay Trigger
+                QuantumVolumetricButton(
+                    text = "VISUALIZE 512-BIT ENCLAVE STATUS HUD",
+                    icon = Icons.Default.DashboardCustomize,
+                    primaryColor = OperationalEmerald,
+                    secondaryColor = PhotonicCyan,
+                    containerColor = SpaceCobaltDark,
+                    modifier = Modifier.fillMaxWidth(),
+                    shapeRadius = 10.dp,
+                    onClick = { viewModel.setEnclaveOverlayVisible(true) }
+                )
+            }
+        }
+
+        // Biometric Authentication Gate via Android Credential Manager
+        item {
+            QuantumGlassCard(
+                borderColor = when (enclaveKey.lockState) {
+                    EnclaveLockState.UNLOCKED -> OperationalEmerald.copy(alpha = 0.6f)
+                    EnclaveLockState.AUTHENTICATING -> PhotonicCyan.copy(alpha = 0.8f)
+                    EnclaveLockState.DENIED -> ContainmentCrimson.copy(alpha = 0.7f)
+                    EnclaveLockState.LOCKED -> QuantumViolet.copy(alpha = 0.5f)
+                },
+                backgroundColor = SpaceCobaltGlassElevated
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        PhotonicSignalPulseIndicator(
+                            signalColor = when (enclaveKey.lockState) {
+                                EnclaveLockState.UNLOCKED -> OperationalEmerald
+                                EnclaveLockState.AUTHENTICATING -> PhotonicCyan
+                                EnclaveLockState.DENIED -> ContainmentCrimson
+                                EnclaveLockState.LOCKED -> QuantumViolet
+                            },
+                            size = 10.dp,
+                            pulseSpeedMs = if (enclaveKey.lockState == EnclaveLockState.AUTHENTICATING) 600 else 1800
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "ANDROID CREDENTIAL MANAGER GATE",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PhotonicCyanLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = enclaveKey.lockState.label,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = when (enclaveKey.lockState) {
+                                    EnclaveLockState.UNLOCKED -> OperationalEmeraldLight
+                                    EnclaveLockState.AUTHENTICATING -> PhotonicCyanLight
+                                    EnclaveLockState.DENIED -> ContainmentCrimson
+                                    EnclaveLockState.LOCKED -> AmbientWhite
+                                },
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    if (isUnlocked) {
+                        QuantumVolumetricButton(
+                            text = "SEAL VAULT",
+                            icon = Icons.Default.Lock,
+                            primaryColor = ContainmentCrimson,
+                            secondaryColor = QuantumViolet,
+                            containerColor = SpaceCobaltSurface,
+                            shapeRadius = 8.dp,
+                            onClick = { viewModel.lockEnclaveStorage() }
+                        )
+                    } else {
+                        QuantumVolumetricButton(
+                            text = if (enclaveKey.lockState == EnclaveLockState.AUTHENTICATING) "SCANNING..." else "BIOMETRIC AUTH",
+                            icon = Icons.Default.Fingerprint,
+                            primaryColor = if (enclaveKey.lockState == EnclaveLockState.DENIED) SolarAmber else PhotonicCyan,
+                            secondaryColor = OperationalEmerald,
+                            containerColor = SpaceCobaltSurface,
+                            shapeRadius = 8.dp,
+                            onClick = {
+                                if (enclaveKey.lockState != EnclaveLockState.AUTHENTICATING) {
+                                    viewModel.authenticateEnclaveWithCredentialManager(context)
+                                }
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Hardware Attestation Specs
+                if (isUnlocked && enclaveKey.attestationDetails != null) {
+                    val att = enclaveKey.attestationDetails!!
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(OperationalEmeraldDark.copy(alpha = 0.35f))
+                            .border(1.dp, OperationalEmerald.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = OperationalEmerald,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "HARDWARE ATTESTATION CERTIFICATE ACTIVE",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = OperationalEmeraldLight
+                            )
+                        }
+                        Text(
+                            text = "Provider: ${att.credentialType} • Strength: ${att.biometricStrength}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AmbientWhite
+                        )
+                        Text(
+                            text = "Attestation Token: ${att.attestationToken}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = PhotonicCyan
+                        )
+                        Text(
+                            text = "Security Module: ${att.hardwareSecurityModule}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AmbientWhiteMuted,
+                            fontSize = 11.sp
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Access to decrypted 512-bit Kyber-1024 / Dilithium-5 storage sectors is gated by Android Credential Manager Passkey / Class-3 Biometric Challenge.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AmbientWhiteMuted
                     )
                 }
             }
         }
 
-        // 512-bit Dynamic Key Card
+        // 512-bit Dynamic Key Card & Decrypted Storage Sectors
         item {
             QuantumGlassCard(
-                borderColor = QuantumViolet.copy(alpha = 0.5f),
+                borderColor = if (isUnlocked) QuantumViolet.copy(alpha = 0.6f) else SpaceCobaltGlassBorder,
                 backgroundColor = SpaceCobaltGlassElevated
             ) {
                 Row(
@@ -94,45 +250,36 @@ fun EnclaveVaultScreen(
                         Icon(
                             imageVector = Icons.Default.VpnKey,
                             contentDescription = "Post Quantum Key",
-                            tint = QuantumVioletLight,
+                            tint = if (isUnlocked) QuantumVioletLight else AmbientWhiteMuted,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "CURRENT POST-QUANTUM KEY",
+                                text = "POST-QUANTUM STORAGE KEY",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = QuantumVioletLight,
+                                color = if (isUnlocked) QuantumVioletLight else AmbientWhiteMuted,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = enclaveKey.keyId,
+                                text = if (isUnlocked) enclaveKey.keyId else "••••••••-••••-••••-••••",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = AmbientWhite,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
                             )
                         }
                     }
 
-                    Button(
-                        onClick = { viewModel.rotateEnclaveKey() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = QuantumViolet,
-                            contentColor = AmbientWhite
-                        ),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
+                    if (isUnlocked) {
+                        QuantumVolumetricButton(
                             text = "ROTATE",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
+                            icon = Icons.Default.Refresh,
+                            primaryColor = QuantumVioletLight,
+                            secondaryColor = OperationalEmerald,
+                            containerColor = SpaceCobaltSurface,
+                            shapeRadius = 8.dp,
+                            onClick = { viewModel.rotateEnclaveKey() }
                         )
                     }
                 }
@@ -144,7 +291,7 @@ fun EnclaveVaultScreen(
                     listOf(
                         "LATTICE ALGORITHM" to enclaveKey.algorithm,
                         "HARDWARE SLOT" to enclaveKey.hardwareSlot,
-                        "PHYSICAL MEMORY ADDR" to enclaveKey.memoryAddress,
+                        "PHYSICAL MEMORY ADDR" to if (isUnlocked) enclaveKey.memoryAddress else "0x7FFF_XXXX_XXXX_SEALED",
                         "EPHEMERAL ROTATION" to "${enclaveKey.rotationRemainingSec}s remaining",
                         "ENCLAVE STATE" to enclaveKey.activeState
                     ).forEach { (label, value) ->
@@ -164,9 +311,66 @@ fun EnclaveVaultScreen(
                             Text(
                                 text = value,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (label.contains("ROTATION")) SolarAmber else PhotonicCyanLight,
+                                color = if (label.contains("ROTATION")) SolarAmber else if (isUnlocked) PhotonicCyanLight else AmbientWhiteMuted,
                                 fontWeight = FontWeight.Bold
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Post-Quantum Enclave Storage Sectors (Accessible when Unlocked)
+        if (isUnlocked) {
+            item {
+                QuantumGlassCard(
+                    borderColor = OperationalEmerald.copy(alpha = 0.5f),
+                    backgroundColor = SpaceCobaltGlassElevated
+                ) {
+                    Text(
+                        text = "DECRYPTED 512-BIT ENCLAVE SECTORS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OperationalEmeraldLight,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            Triple("SECTOR-01", "Model Weight Matrix (Kyber-1024 Encrypted)", "Verified Integrity · 0x882B"),
+                            Triple("SECTOR-02", "Hardware Random Entropy Seed Pool", "512-bit / True Entropy TRNG"),
+                            Triple("SECTOR-03", "Zero-Trust Agent Auth Ring Tokens", "3 Active Sub-Agent Signatures")
+                        ).forEach { (sectorId, description, status) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(SpaceCobaltSurface)
+                                    .border(1.dp, SpaceCobaltGlassBorder, RoundedCornerShape(6.dp))
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = sectorId,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = PhotonicCyan,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = AmbientWhite
+                                    )
+                                }
+                                Text(
+                                    text = status,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OperationalEmeraldLight,
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -355,7 +559,7 @@ fun AuditLogItemCard(log: AuditLogEntity) {
 
     QuantumGlassCard(
         borderColor = if (log.eventType.contains("THREAT")) ContainmentCrimson.copy(alpha = 0.4f)
-        else if (log.eventType.contains("ENCLAVE")) QuantumViolet.copy(alpha = 0.4f)
+        else if (log.eventType.contains("ENCLAVE") || log.eventType.contains("BIOMETRIC")) QuantumViolet.copy(alpha = 0.4f)
         else PhotonicCyan.copy(alpha = 0.25f),
         backgroundColor = SpaceCobaltGlassElevated
     ) {
@@ -402,3 +606,4 @@ fun AuditLogItemCard(log: AuditLogEntity) {
         }
     }
 }
+

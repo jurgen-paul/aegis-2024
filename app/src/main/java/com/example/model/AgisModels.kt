@@ -68,11 +68,61 @@ data class ValidationProof(
     val isPassing: Boolean = true
 )
 
+enum class EnclaveLockState(val label: String) {
+    LOCKED("Hardware Locked (Biometric Auth Required)"),
+    AUTHENTICATING("Verifying Credential Manager Token..."),
+    UNLOCKED("Decrypted & Biometrically Attested"),
+    DENIED("Authentication Challenge Failed")
+}
+
+data class BiometricAttestationDetails(
+    val credentialType: String = "Passkey / FIDO2 Biometric",
+    val attestationToken: String = "0x8F92...D04E",
+    val biometricStrength: String = "Class 3 (Strong Hardware Biometrics)",
+    val hardwareSecurityModule: String = "ARM TrustZone / StrongBox Keymaster",
+    val verifiedTimestamp: Long = System.currentTimeMillis()
+)
+
 data class EnclaveKeyInfo(
     val keyId: String,
     val algorithm: String = "Kyber-1024 / Dilithium-5 (512-bit)",
     val hardwareSlot: String = "eUICC Enclave Core #04",
     val memoryAddress: String = "0x7FFF_8000_9000_PQE",
     val rotationRemainingSec: Int = 42,
-    val activeState: String = "SEALED_HARDWARE_BOUND"
+    val activeState: String = "SEALED_HARDWARE_BOUND",
+    val lockState: EnclaveLockState = EnclaveLockState.LOCKED,
+    val attestationDetails: BiometricAttestationDetails? = null
 )
+
+enum class IntentRiskLevel(val label: String) {
+    SAFE("Low Risk / Autonomous"),
+    ELEVATED("Elevated / Sandboxed"),
+    RESTRICTED("Restricted / Gated"),
+    ISOLATED("Quarantine Contained")
+}
+
+data class NeuralIntentPattern(
+    val id: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val sourceNode: String,
+    val targetNode: String,
+    val intentType: String,
+    val classification: String,
+    val confidenceScore: Float, // 0.0 to 1.0
+    val entropyDelta: Float,
+    val latencyMs: Int,
+    val riskLevel: IntentRiskLevel,
+    val synchronicHash: String,
+    val activeState: String = "ROUTED_VERIFIED"
+)
+
+data class NeuralTopologyNode(
+    val nodeId: String,
+    val label: String,
+    val role: String,
+    val normalizedX: Float, // 0.0 to 1.0 on canvas
+    val normalizedY: Float, // 0.0 to 1.0 on canvas
+    val activeTrafficRate: Float, // ops/sec
+    val isPrimaryCore: Boolean = false
+)
+

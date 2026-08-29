@@ -12,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,10 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ThreatSeverity
+import com.example.ui.animation.PhotonicSignalPulseIndicator
+import com.example.ui.animation.QuantumFluidCrossfade
+import com.example.ui.components.EnclaveStatusOverlay
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.screens.*
 import com.example.ui.theme.*
@@ -68,6 +73,10 @@ fun AgisMainApp(viewModel: AgisViewModel) {
     val threatSeverity by viewModel.globalThreatLevel.collectAsState()
     val biometrics by viewModel.biometrics.collectAsState()
     val alertMessage by viewModel.systemAlertMessage.collectAsState()
+    val isEnclaveOverlayVisible by viewModel.isEnclaveOverlayVisible.collectAsState()
+    val isLatticeVerifying by viewModel.isLatticeVerifying.collectAsState()
+    val enclaveKey by viewModel.enclaveKey.collectAsState()
+    val context = LocalContext.current
 
     val tabs = listOf(
         NavTab.Overview,
@@ -99,14 +108,11 @@ fun AgisMainApp(viewModel: AgisViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (threatSeverity == ThreatSeverity.CRITICAL) ContainmentCrimson
-                                        else OperationalEmerald
-                                    )
+                            PhotonicSignalPulseIndicator(
+                                signalColor = if (threatSeverity == ThreatSeverity.CRITICAL) ContainmentCrimson
+                                else OperationalEmerald,
+                                size = 8.dp,
+                                pulseSpeedMs = if (threatSeverity == ThreatSeverity.CRITICAL) 800 else 1800
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
@@ -136,8 +142,9 @@ fun AgisMainApp(viewModel: AgisViewModel) {
                             )
                             PhotonicBadge(
                                 text = "512-BIT PQ",
-                                signalColor = QuantumVioletLight,
-                                icon = Icons.Default.Lock
+                                signalColor = OperationalEmerald,
+                                icon = Icons.Default.Lock,
+                                modifier = Modifier.clickable { viewModel.setEnclaveOverlayVisible(true) }
                             )
                         }
                     }
@@ -200,18 +207,23 @@ fun AgisMainApp(viewModel: AgisViewModel) {
                 .padding(innerPadding)
                 .background(SpaceCobaltDark)
         ) {
-            // Screen Switcher
-            when (selectedTabIndex) {
-                0 -> DashboardScreen(
-                    viewModel = viewModel,
-                    onNavigateToTab = { viewModel.setSelectedTab(it) },
-                    onInspectLayer = { viewModel.setInspectedLayerId(it) }
-                )
-                1 -> ArchitectureMatrixScreen(viewModel = viewModel)
-                2 -> NeuralCommandScreen(viewModel = viewModel)
-                3 -> ShieldPipelineScreen(viewModel = viewModel)
-                4 -> EnclaveVaultScreen(viewModel = viewModel)
-                5 -> AutonomousValidationScreen(viewModel = viewModel)
+            // Screen Switcher with Fluid Quantum Crossfade
+            QuantumFluidCrossfade(
+                targetState = selectedTabIndex,
+                modifier = Modifier.fillMaxSize()
+            ) { tabIndex ->
+                when (tabIndex) {
+                    0 -> DashboardScreen(
+                        viewModel = viewModel,
+                        onNavigateToTab = { viewModel.setSelectedTab(it) },
+                        onInspectLayer = { viewModel.setInspectedLayerId(it) }
+                    )
+                    1 -> ArchitectureMatrixScreen(viewModel = viewModel)
+                    2 -> NeuralCommandScreen(viewModel = viewModel)
+                    3 -> ShieldPipelineScreen(viewModel = viewModel)
+                    4 -> EnclaveVaultScreen(viewModel = viewModel)
+                    5 -> AutonomousValidationScreen(viewModel = viewModel)
+                }
             }
 
             // Floating System Notification Alert
@@ -279,6 +291,18 @@ fun AgisMainApp(viewModel: AgisViewModel) {
                     }
                 }
             }
+
+            // 512-bit Post-Quantum Enclave Status Dashboard Overlay
+            EnclaveStatusOverlay(
+                isVisible = isEnclaveOverlayVisible,
+                enclaveKey = enclaveKey,
+                isLatticeVerifying = isLatticeVerifying,
+                onDismiss = { viewModel.setEnclaveOverlayVisible(false) },
+                onRotateKey = { viewModel.rotateEnclaveKey() },
+                onVerifyLattice = { viewModel.runLatticeIntegrityScan() },
+                onBiometricAuth = { viewModel.authenticateEnclaveWithCredentialManager(context) },
+                onLockEnclave = { viewModel.lockEnclaveStorage() }
+            )
         }
     }
 }

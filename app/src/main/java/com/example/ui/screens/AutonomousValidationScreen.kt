@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ValidationProof
+import com.example.ui.animation.QuantumVolumetricButton
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.theme.*
@@ -270,33 +271,15 @@ fun AutonomousValidationScreen(
                             )
                         }
 
-                        Button(
-                            onClick = { viewModel.runAutonomousValidation() },
-                            enabled = !isValidating,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PhotonicCyan,
-                                contentColor = SpaceCobaltDark
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            if (isValidating) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(14.dp),
-                                    color = SpaceCobaltDark,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("VERIFYING...")
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("RUN ALL PROOFS")
-                            }
-                        }
+                        QuantumVolumetricButton(
+                            text = if (isValidating) "VERIFYING..." else "RUN ALL PROOFS",
+                            icon = if (isValidating) Icons.Default.HourglassTop else Icons.Default.PlayArrow,
+                            primaryColor = PhotonicCyan,
+                            secondaryColor = OperationalEmerald,
+                            containerColor = SpaceCobaltSurface,
+                            shapeRadius = 8.dp,
+                            onClick = { if (!isValidating) viewModel.runAutonomousValidation() }
+                        )
                     }
                 }
             }
