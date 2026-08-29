@@ -25,6 +25,7 @@ val OperationalEmeraldGlow = Color(0x3310B981)
 val OperationalEmeraldDark = Color(0xFF059669)
 
 val ContainmentCrimson = Color(0xFFFF2A55)
+val ContainmentCrimsonLight = Color(0xFFFDA4AF)
 val ContainmentCrimsonGlow = Color(0x33FF2A55)
 val ContainmentCrimsonDark = Color(0xFFDC2626)
 

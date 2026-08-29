@@ -59,11 +59,12 @@ sealed class NavTab(
     val icon: ImageVector
 ) {
     object Overview : NavTab(0, "Overview", Icons.Default.Dashboard)
-    object Matrix : NavTab(1, "Evolution", Icons.Default.CompareArrows)
-    object Neural : NavTab(2, "Neural", Icons.Default.Psychology)
-    object Shield : NavTab(3, "Shield", Icons.Default.Shield)
-    object Enclave : NavTab(4, "Enclave", Icons.Default.VpnKey)
-    object Validator : NavTab(5, "Validate", Icons.Default.Verified)
+    object Recon : NavTab(1, "Radar", Icons.Default.Radar)
+    object Matrix : NavTab(2, "Evolution", Icons.Default.CompareArrows)
+    object Neural : NavTab(3, "Neural", Icons.Default.Psychology)
+    object Shield : NavTab(4, "Shield", Icons.Default.Shield)
+    object Enclave : NavTab(5, "Enclave", Icons.Default.VpnKey)
+    object Validator : NavTab(6, "Validate", Icons.Default.Verified)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +81,7 @@ fun AgisMainApp(viewModel: AgisViewModel) {
 
     val tabs = listOf(
         NavTab.Overview,
+        NavTab.Recon,
         NavTab.Matrix,
         NavTab.Neural,
         NavTab.Shield,
@@ -218,11 +220,12 @@ fun AgisMainApp(viewModel: AgisViewModel) {
                         onNavigateToTab = { viewModel.setSelectedTab(it) },
                         onInspectLayer = { viewModel.setInspectedLayerId(it) }
                     )
-                    1 -> ArchitectureMatrixScreen(viewModel = viewModel)
-                    2 -> NeuralCommandScreen(viewModel = viewModel)
-                    3 -> ShieldPipelineScreen(viewModel = viewModel)
-                    4 -> EnclaveVaultScreen(viewModel = viewModel)
-                    5 -> AutonomousValidationScreen(viewModel = viewModel)
+                    1 -> BiometricRadarScreen(viewModel = viewModel)
+                    2 -> ArchitectureMatrixScreen(viewModel = viewModel)
+                    3 -> NeuralCommandScreen(viewModel = viewModel)
+                    4 -> ShieldPipelineScreen(viewModel = viewModel)
+                    5 -> EnclaveVaultScreen(viewModel = viewModel)
+                    6 -> AutonomousValidationScreen(viewModel = viewModel)
                 }
             }
 

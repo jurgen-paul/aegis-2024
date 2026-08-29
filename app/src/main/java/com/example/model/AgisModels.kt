@@ -190,3 +190,128 @@ data class ThreatCategoryMetric(
     val accentColorHex: String = "#10B981"
 )
 
+enum class RadarThreatLevel(val label: String) {
+    FRIENDLY("Friendly / Authorized"),
+    NEUTRAL("Neutral / Civil"),
+    HOSTILE("Hostile / Red Alert"),
+    UNKNOWN("Unverified / Taint Risk")
+}
+
+enum class TargetClassification(val label: String) {
+    OPERATIVE("Autonomous Operative"),
+    INTRUDER("Perimeter Intruder"),
+    SYNTHETIC_DRONE("Autonomous Micro-Drone"),
+    UNKNOWN_ENTITY("Sub-Surface Entity"),
+    GHOST_SIGNATURE("Electromagnetic Ghost")
+}
+
+data class RadarTarget(
+    val id: String,
+    val codeName: String,
+    val classification: TargetClassification,
+    val threatLevel: RadarThreatLevel,
+    val rangeMeters: Float,
+    val bearingDegrees: Float,
+    val velocityKmh: Float,
+    val headingDegrees: Float,
+    val altitudeMeters: Float = 1.8f,
+    val isTraceLocked: Boolean = false,
+    val matchedSubjectId: String? = null,
+    val confidence: Float = 0.95f,
+    val signalStrengthDbm: Float = -48.2f,
+    val trajectoryHistory: List<Pair<Float, Float>> = emptyList() // Polar (range, bearing) history
+)
+
+data class SubjectIdentity(
+    val id: String,
+    val operativeCode: String,
+    val fullName: String,
+    val clearanceLevel: String, // "TIER-6 ENCLAVE MASTER", "TIER-4 SENTINEL", "TIER-1 VISITOR", "RED_FLAG QUARANTINE"
+    val affiliation: String,
+    val threatRating: ThreatSeverity,
+    val isRedNotice: Boolean = false,
+    val biometricHash: String,
+    val facialConfidence: Float = 0.98f,
+    val voiceConfidence: Float = 0.94f,
+    val shadowSilhouetteScore: Float = 0.91f,
+    val footstepsGaitScore: Float = 0.89f,
+    val lastKnownCoordinates: String = "GRID-44.209, 12.871",
+    val primaryThreatVector: String = "None Detected",
+    val profileStatus: String = "ACTIVE_SURVEILLANCE"
+)
+
+data class FacialRecognitionScan(
+    val subjectId: String,
+    val subjectName: String,
+    val matchConfidence: Float, // 0.0 to 1.0
+    val livenessScore: Float, // 0.0 to 1.0
+    val landmarkCount: Int = 68,
+    val pupillaryDistanceMm: Float = 63.5f,
+    val headPoseRollPitchYaw: Triple<Float, Float, Float> = Triple(0.2f, -1.4f, 2.1f),
+    val antiSpoofAttestation: Boolean = true,
+    val microExpressionIndex: Float = 0.12f,
+    val biometricVectorDigest: String
+)
+
+data class VoiceprintRecognitionScan(
+    val subjectId: String,
+    val subjectName: String,
+    val matchConfidence: Float,
+    val pitchHz: Float = 142.6f,
+    val formantF1Hz: Float = 520f,
+    val formantF2Hz: Float = 1840f,
+    val formantF3Hz: Float = 2650f,
+    val deepfakeSyntheticScore: Float = 0.02f, // low = authentic human
+    val speakerDiarizationId: String = "SPK_ALPHA_01",
+    val spectralBandEnergies: List<Float> = emptyList()
+)
+
+data class ShadowSilhouetteScan(
+    val subjectId: String,
+    val subjectName: String,
+    val matchConfidence: Float,
+    val estimatedHeightCm: Float = 181.4f,
+    val shoulderToHipRatio: Float = 1.38f,
+    val volumetricGaitSymmetry: Float = 0.95f,
+    val ambientOcclusionLux: Float = 120.5f,
+    val silhouetteProfileDigest: String
+)
+
+data class FootstepsGaitScan(
+    val subjectId: String,
+    val subjectName: String,
+    val matchConfidence: Float,
+    val cadenceSpm: Int = 114, // steps per min
+    val groundForceNewtons: Float = 780.5f,
+    val heelToePressureRatio: Float = 1.15f,
+    val seismicSensorId: String = "GEOPHONE_NODE_04",
+    val gaitResonanceHz: Float = 1.85f,
+    val groundImpulseWaveform: List<Float> = emptyList()
+)
+
+enum class TelemetryAnomalyType(val label: String, val shortCode: String, val defaultSeverity: ThreatSeverity) {
+    UNMASKED_PII_LEAK("Unmasked PII & Egress Leak", "PII_LEAK", ThreatSeverity.CRITICAL),
+    PROMPT_INJECTION_PAYLOAD("Adversarial Prompt Injection Taint", "PROMPT_INJECT", ThreatSeverity.CRITICAL),
+    DIFFERENTIAL_PRIVACY_VIOLATION("Differential Privacy Epsilon Collapse", "EPSILON_COLLAPSE", ThreatSeverity.HIGH),
+    MEMORY_REGISTER_EXFIL("Enclave Memory Exfiltration Probe", "MEM_EXFIL", ThreatSeverity.CRITICAL),
+    RETINAL_BIOMETRIC_EXPOSURE("Unredacted Biometric Retinal / EEG Stream", "BIO_EXPOSURE", ThreatSeverity.HIGH),
+    SURGE_PACKET_ANOMALY("High-Rate Entropy Taint Surge", "SURGE_ANOMALY", ThreatSeverity.HIGH)
+}
+
+data class TelemetryAnomalyAlert(
+    val id: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val anomalyType: TelemetryAnomalyType,
+    val severity: ThreatSeverity,
+    val riskScore: Float, // 0.0 to 1.0 (e.g. 0.98 = 98%)
+    val title: String,
+    val description: String,
+    val detectedPayloadSnippet: String,
+    val redactionRuleApplied: String,
+    val affectedDomainOrNode: String = "ENCLAVE_BOUNDARY_GATE",
+    val isMitigated: Boolean = false,
+    val mitigationActionTaken: String? = null,
+    val cryptographicFingerprint: String
+)
+
+

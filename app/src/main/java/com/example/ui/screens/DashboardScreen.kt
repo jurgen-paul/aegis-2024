@@ -26,6 +26,7 @@ import com.example.ui.components.BiometricHeader
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.components.SubAgentThreadCard
+import com.example.ui.components.TelemetryAnomalyAlertCenter
 import com.example.ui.theme.*
 import com.example.viewmodel.AgisViewModel
 
@@ -154,7 +155,7 @@ fun DashboardScreen(
             QuantumGlassCard(
                 borderColor = PhotonicCyan.copy(alpha = 0.5f),
                 backgroundColor = SpaceCobaltGlassElevated,
-                onClick = { onNavigateToTab(1) }
+                onClick = { onNavigateToTab(2) }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -221,12 +222,84 @@ fun DashboardScreen(
             }
         }
 
+        // Radar Track & Trace + 5-Vector Multi-Modal Biometrics Spotlight Card
+        item {
+            QuantumGlassCard(
+                borderColor = PhotonicCyanLight.copy(alpha = 0.6f),
+                backgroundColor = SpaceCobaltGlassElevated,
+                onClick = { onNavigateToTab(1) }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Radar,
+                            contentDescription = "Radar & Biometrics Recon",
+                            tint = PhotonicCyanLight,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "360° RADAR & 5-VECTOR BIOMETRIC SENTINEL",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PhotonicCyanLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Track & Trace, Face, Voice, ID, Shadow, Footsteps",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = AmbientWhite,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Navigate to Radar & Biometrics",
+                        tint = PhotonicCyanLight
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Live active/passive 360° radar sweep with touch-to-lock tracking, 68-point 3D facial topology, acoustic voiceprint diarization, searchable ID registry, shadow raycast, and seismic geophone footstep cadence.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AmbientWhiteMuted,
+                    fontSize = 11.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    PhotonicBadge(
+                        text = "360° RADAR TRACE",
+                        signalColor = PhotonicCyan
+                    )
+                    PhotonicBadge(
+                        text = "FACE & VOICEPRINT",
+                        signalColor = QuantumVioletLight
+                    )
+                    PhotonicBadge(
+                        text = "SHADOW & FOOTSTEPS",
+                        signalColor = OperationalEmerald
+                    )
+                }
+            }
+        }
+
         // Real-Time Telemetry & Threat Dashboard Spotlight Card
         item {
             QuantumGlassCard(
                 borderColor = OperationalEmerald.copy(alpha = 0.5f),
                 backgroundColor = SpaceCobaltGlassElevated,
-                onClick = { onNavigateToTab(5) }
+                onClick = { onNavigateToTab(6) }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -311,7 +384,7 @@ fun DashboardScreen(
                         text = "EXPLORE MATRIX",
                         style = MaterialTheme.typography.labelSmall,
                         color = OperationalEmerald,
-                        modifier = Modifier.clickable { onNavigateToTab(1) }
+                        modifier = Modifier.clickable { onNavigateToTab(2) }
                     )
                 }
 
@@ -337,7 +410,7 @@ fun DashboardScreen(
                                     backgroundColor = SpaceCobaltGlassElevated,
                                     onClick = {
                                         onInspectLayer(layer.layerId)
-                                        onNavigateToTab(1)
+                                        onNavigateToTab(2)
                                     }
                                 ) {
                                     Row(
