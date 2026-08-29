@@ -21,6 +21,7 @@ import com.example.model.ValidationProof
 import com.example.ui.animation.QuantumVolumetricButton
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
+import com.example.ui.components.TelemetryThreatDashboard
 import com.example.ui.theme.*
 import com.example.viewmodel.AgisViewModel
 
@@ -34,7 +35,7 @@ fun AutonomousValidationScreen(
     val sanitizedOutput by viewModel.sanitizedTelemetryOutput.collectAsState()
     val sanitizationStats by viewModel.sanitizationStats.collectAsState()
 
-    var activeTab by remember { mutableStateOf("SANITIZER") } // "SANITIZER" or "PROOFS"
+    var activeTab by remember { mutableStateOf("DASHBOARD") } // "DASHBOARD", "SANITIZER", "PROOFS"
 
     LazyColumn(
         modifier = Modifier
@@ -61,7 +62,7 @@ fun AutonomousValidationScreen(
                             color = PhotonicCyanLight
                         )
                         Text(
-                            text = "Continuous Telemetry & Schema Proofs",
+                            text = "Telemetry Sanitization & Threat Dashboard",
                             style = MaterialTheme.typography.titleMedium,
                             color = AmbientWhite,
                             fontWeight = FontWeight.Bold
@@ -80,10 +81,11 @@ fun AutonomousValidationScreen(
                 // Tab Selector
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     listOf(
-                        "SANITIZER" to "Network Telemetry Sanitizer",
+                        "DASHBOARD" to "Real-Time Matrix",
+                        "SANITIZER" to "Payload Sanitizer",
                         "PROOFS" to "Pre-Execution Checks"
                     ).forEach { (tabKey, label) ->
                         val isSelected = activeTab == tabKey
@@ -110,6 +112,12 @@ fun AutonomousValidationScreen(
                         }
                     }
                 }
+            }
+        }
+
+        if (activeTab == "DASHBOARD") {
+            item {
+                TelemetryThreatDashboard(viewModel = viewModel)
             }
         }
 

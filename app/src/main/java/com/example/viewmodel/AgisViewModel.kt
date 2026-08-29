@@ -139,12 +139,178 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
     private val _topologyNodes = MutableStateFlow(getInitialTopologyNodes())
     val topologyNodes: StateFlow<List<NeuralTopologyNode>> = _topologyNodes.asStateFlow()
 
+    // Cyber-Node Architecture Mesh State
+    private val _cyberNodes = MutableStateFlow<List<CyberNode>>(AgisArchitectureConstants.CYBER_NODES)
+    val cyberNodes: StateFlow<List<CyberNode>> = _cyberNodes.asStateFlow()
+
+    private val _activeNeuralRoutes = MutableStateFlow<List<CyberNodeRoute>>(AgisArchitectureConstants.STANDARD_NEURAL_ROUTES)
+    val activeNeuralRoutes: StateFlow<List<CyberNodeRoute>> = _activeNeuralRoutes.asStateFlow()
+
+    private val _selectedCyberRouteId = MutableStateFlow("ROUTE_ZERO_TRUST_ATTEST")
+    val selectedCyberRouteId: StateFlow<String> = _selectedCyberRouteId.asStateFlow()
+
+    private val _selectedCyberNodeId = MutableStateFlow<String?>(null)
+    val selectedCyberNodeId: StateFlow<String?> = _selectedCyberNodeId.asStateFlow()
+
+    private val _isRouteSimulationRunning = MutableStateFlow(false)
+    val isRouteSimulationRunning: StateFlow<Boolean> = _isRouteSimulationRunning.asStateFlow()
+
+    private val _activeHopIndex = MutableStateFlow(0)
+    val activeHopIndex: StateFlow<Int> = _activeHopIndex.asStateFlow()
+
+    // Interactive Security Policy Management
+    private val _securityPolicyRules = MutableStateFlow<List<SecurityPolicyRule>>(AgisArchitectureConstants.DEFAULT_SECURITY_POLICY_RULES)
+    val securityPolicyRules: StateFlow<List<SecurityPolicyRule>> = _securityPolicyRules.asStateFlow()
+
+    private val _policyEnforcementLevel = MutableStateFlow(PolicyEnforcementLevel.STRICT)
+    val policyEnforcementLevel: StateFlow<PolicyEnforcementLevel> = _policyEnforcementLevel.asStateFlow()
+
+    private val _isPolicyAuditRunning = MutableStateFlow(false)
+    val isPolicyAuditRunning: StateFlow<Boolean> = _isPolicyAuditRunning.asStateFlow()
+
+    // Real-Time Telemetry Throughput & Threat Visualization Stream
+    private val _telemetryThroughputHistory = MutableStateFlow<List<TelemetryThroughputPoint>>(getInitialThroughputHistory())
+    val telemetryThroughputHistory: StateFlow<List<TelemetryThroughputPoint>> = _telemetryThroughputHistory.asStateFlow()
+
+    private val _currentThroughputPoint = MutableStateFlow<TelemetryThroughputPoint>(
+        TelemetryThroughputPoint(
+            rawThroughputKbps = 642.5f,
+            sanitizedThroughputKbps = 485.2f,
+            packetsPerSec = 124,
+            piiScrubbedRate = 18,
+            threatAnomalyScore = 0.08f,
+            differentialEpsilon = 0.5f
+        )
+    )
+    val currentThroughputPoint: StateFlow<TelemetryThroughputPoint> = _currentThroughputPoint.asStateFlow()
+
+    private val _threatCategoryMetrics = MutableStateFlow<List<ThreatCategoryMetric>>(getInitialThreatCategoryMetrics())
+    val threatCategoryMetrics: StateFlow<List<ThreatCategoryMetric>> = _threatCategoryMetrics.asStateFlow()
+
+    private val _isThroughputBursting = MutableStateFlow(false)
+    val isThroughputBursting: StateFlow<Boolean> = _isThroughputBursting.asStateFlow()
+
     init {
         startTelemetryLoop()
         startKeyRotationLoop()
         startIntentPatternStreamLoop()
+        startRealtimeThroughputStream()
         seedInitialTelemetry()
         sanitizeRawTelemetry(_rawTelemetryInput.value)
+    }
+
+    private fun startRealtimeThroughputStream() {
+        viewModelScope.launch {
+            while (isActive) {
+                delay(1000)
+                val isBurst = _isThroughputBursting.value
+                val baseRaw = if (isBurst) (1200f + Random.nextFloat() * 400f) else (580f + Random.nextFloat() * 160f)
+                val baseSanitized = baseRaw * (0.72f + Random.nextFloat() * 0.08f)
+                val packets = if (isBurst) (220 + Random.nextInt(80)) else (90 + Random.nextInt(45))
+                val piiRate = if (isBurst) (30 + Random.nextInt(20)) else (12 + Random.nextInt(10))
+                val isThreatActive = _globalThreatLevel.value == ThreatSeverity.CRITICAL
+                val anomalyScore = if (isThreatActive) (0.85f + Random.nextFloat() * 0.12f) else (0.04f + Random.nextFloat() * 0.08f)
+
+                val newPoint = TelemetryThroughputPoint(
+                    timestamp = System.currentTimeMillis(),
+                    rawThroughputKbps = String.format(Locale.US, "%.1f", baseRaw).toFloat(),
+                    sanitizedThroughputKbps = String.format(Locale.US, "%.1f", baseSanitized).toFloat(),
+                    packetsPerSec = packets,
+                    piiScrubbedRate = piiRate,
+                    threatAnomalyScore = String.format(Locale.US, "%.3f", anomalyScore).toFloat(),
+                    differentialEpsilon = 0.5f
+                )
+
+                _currentThroughputPoint.value = newPoint
+                val currentHistory = _telemetryThroughputHistory.value
+                _telemetryThroughputHistory.value = (currentHistory + newPoint).takeLast(24)
+            }
+        }
+    }
+
+    fun triggerTelemetryBurst() {
+        viewModelScope.launch {
+            _isThroughputBursting.value = true
+            _systemAlertMessage.value = "⚡ Telemetry Ingestion Burst Triggered (2.4x Inbound Stream)"
+            vibrate(40)
+            delay(4000)
+            _isThroughputBursting.value = false
+            _systemAlertMessage.value = "✓ Telemetry Throughput Harmonized & Scrubbed"
+        }
+    }
+
+    fun flushPerimeterBuffer() {
+        viewModelScope.launch {
+            vibrate(50)
+            _systemAlertMessage.value = "🧹 Flushing Perimeter Egress Buffer with ε=0.5 Laplace Noise..."
+            delay(600)
+            _systemAlertMessage.value = "✓ Perimeter Egress Buffer 100% Scrubbed • 0 PII Leaks"
+            repository.insertAuditLog(
+                AuditLogEntity(
+                    eventType = "PERIMETER_BUFFER_FLUSH",
+                    securityTier = "TIER-6 (Differential Privacy)",
+                    summary = "Operator executed perimeter buffer sanitization flush. Zero-leak cryptographic attestation verified.",
+                    cryptographicProof = "0xFLUSH_" + UUID.randomUUID().toString().take(8).uppercase(),
+                    subAgentId = "AGENT-BETA"
+                )
+            )
+            vibrate(70)
+        }
+    }
+
+    private fun getInitialThroughputHistory(): List<TelemetryThroughputPoint> {
+        val now = System.currentTimeMillis()
+        return (0 until 18).map { i ->
+            val time = now - ((18 - i) * 1000L)
+            val raw = 520f + (i * 12f) + Random.nextFloat() * 80f
+            val sanitized = raw * 0.76f
+            TelemetryThroughputPoint(
+                timestamp = time,
+                rawThroughputKbps = String.format(Locale.US, "%.1f", raw).toFloat(),
+                sanitizedThroughputKbps = String.format(Locale.US, "%.1f", sanitized).toFloat(),
+                packetsPerSec = 95 + (i * 2) + Random.nextInt(15),
+                piiScrubbedRate = 14 + Random.nextInt(6),
+                threatAnomalyScore = 0.05f + Random.nextFloat() * 0.05f,
+                differentialEpsilon = 0.5f
+            )
+        }
+    }
+
+    private fun getInitialThreatCategoryMetrics(): List<ThreatCategoryMetric> {
+        return listOf(
+            ThreatCategoryMetric(
+                categoryName = "Prompt Injection / Jailbreak",
+                shortCode = "PROMPT_INJECT",
+                incidentCount = 14,
+                severityLevel = ThreatSeverity.CRITICAL,
+                riskRatio = 0.42f,
+                accentColorHex = "#FF2A55"
+            ),
+            ThreatCategoryMetric(
+                categoryName = "Data Exfiltration Probe",
+                shortCode = "EXFIL_PROBE",
+                incidentCount = 8,
+                severityLevel = ThreatSeverity.HIGH,
+                riskRatio = 0.28f,
+                accentColorHex = "#FFB703"
+            ),
+            ThreatCategoryMetric(
+                categoryName = "Memory Taint / Buffer Overflow",
+                shortCode = "MEMORY_TAINT",
+                incidentCount = 4,
+                severityLevel = ThreatSeverity.HIGH,
+                riskRatio = 0.18f,
+                accentColorHex = "#A855F7"
+            ),
+            ThreatCategoryMetric(
+                categoryName = "Cross-Domain Privilege Escalation",
+                shortCode = "CROSS_DOMAIN",
+                incidentCount = 3,
+                severityLevel = ThreatSeverity.MEDIUM,
+                riskRatio = 0.12f,
+                accentColorHex = "#00F5FF"
+            )
+        )
     }
 
     private fun startIntentPatternStreamLoop() {
@@ -206,6 +372,88 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
         _selectedIntentFilter.value = filter
     }
 
+    fun selectCyberRoute(routeId: String) {
+        _selectedCyberRouteId.value = routeId
+        _activeHopIndex.value = 0
+        val route = _activeNeuralRoutes.value.firstOrNull { it.id == routeId }
+        if (route != null) {
+            _systemAlertMessage.value = "Selected Route: ${route.name} (${route.nodeHops.size} Hops)"
+        }
+        vibrate(30)
+    }
+
+    fun selectCyberNode(nodeId: String?) {
+        _selectedCyberNodeId.value = nodeId
+        if (nodeId != null) {
+            val node = _cyberNodes.value.firstOrNull { it.id == nodeId }
+            if (node != null) {
+                _systemAlertMessage.value = "Inspecting Cyber-Node: ${node.name} (Tier ${node.tierNumber})"
+            }
+        }
+        vibrate(25)
+    }
+
+    fun cycleNextCyberRoute() {
+        val routes = _activeNeuralRoutes.value
+        if (routes.isNotEmpty()) {
+            val currentIndex = routes.indexOfFirst { it.id == _selectedCyberRouteId.value }
+            val nextIndex = (currentIndex + 1) % routes.size
+            selectCyberRoute(routes[nextIndex].id)
+        }
+    }
+
+    fun dispatchNeuralRoutePacket(routeId: String? = null) {
+        val targetRouteId = routeId ?: _selectedCyberRouteId.value
+        val route = _activeNeuralRoutes.value.firstOrNull { it.id == targetRouteId } ?: return
+
+        viewModelScope.launch {
+            _isRouteSimulationRunning.value = true
+            _selectedCyberRouteId.value = targetRouteId
+            _systemAlertMessage.value = "🚀 Transmitting Neural Intent Packet along [${route.name}]..."
+            vibrate(50)
+
+            // Step through each hop in sequence
+            for (i in 0 until route.nodeHops.size) {
+                _activeHopIndex.value = i
+                val currentNodeId = route.nodeHops[i]
+                
+                // Temporarily boost node load
+                _cyberNodes.value = _cyberNodes.value.map { node ->
+                    if (node.id == currentNodeId) {
+                        node.copy(
+                            activeLoad = (node.activeLoad + 0.15f).coerceAtMost(0.98f),
+                            activePackets = node.activePackets + 1
+                        )
+                    } else node
+                }
+                delay(400)
+            }
+
+            // Route complete - inject to intent stream as proven
+            val newIntent = NeuralIntentPattern(
+                id = "INTENT-ROUTE-" + (1000 + Random.nextInt(9000)),
+                timestamp = System.currentTimeMillis(),
+                sourceNode = route.nodeHops.first(),
+                targetNode = route.nodeHops.last(),
+                intentType = route.intentType,
+                classification = route.name,
+                confidenceScore = 0.998f,
+                entropyDelta = 0.04f,
+                latencyMs = route.latencyMs,
+                riskLevel = route.riskLevel,
+                synchronicHash = route.cryptographicDigest,
+                activeState = "CYBER_NODE_PATH_VERIFIED"
+            )
+            _neuralIntentStream.value = listOf(newIntent) + _neuralIntentStream.value.take(24)
+
+            delay(300)
+            _isRouteSimulationRunning.value = false
+            _activeHopIndex.value = 0
+            _systemAlertMessage.value = "✓ Neural Intent Path Complete • Proof: ${route.cryptographicDigest}"
+            vibrate(60)
+        }
+    }
+
     fun injectSimulatedIntentPattern(type: String, classification: String, risk: IntentRiskLevel) {
         viewModelScope.launch {
             val src = "OPERATOR_NEURAL_HUB"
@@ -229,6 +477,68 @@ class AgisViewModel(application: Application) : AndroidViewModel(application) {
             _systemAlertMessage.value = "⚡ Real-time Intent Pattern [$type] Dispatched & Routed"
             vibrate(40)
         }
+    }
+
+    fun toggleSecurityPolicyRule(ruleId: String) {
+        _securityPolicyRules.value = _securityPolicyRules.value.map { rule ->
+            if (rule.id == ruleId) {
+                val updatedState = !rule.isEnabled
+                _systemAlertMessage.value = if (updatedState) "✓ Activated Policy: ${rule.name}" else "⚠️ Deactivated Policy: ${rule.name}"
+                rule.copy(isEnabled = updatedState)
+            } else rule
+        }
+        vibrate(35)
+    }
+
+    fun setPolicyEnforcementLevel(level: PolicyEnforcementLevel) {
+        _policyEnforcementLevel.value = level
+        _systemAlertMessage.value = "Security Posture Updated: ${level.name}"
+        viewModelScope.launch {
+            repository.insertAuditLog(
+                AuditLogEntity(
+                    eventType = "POLICY_POSTURE_CHANGED",
+                    securityTier = "TIER-0 (Policy Enclave)",
+                    summary = "Operator updated zero-trust posture to ${level.name} (${level.label})",
+                    cryptographicProof = "0xPOL_" + UUID.randomUUID().toString().take(8),
+                    subAgentId = "POLICY-ENGINE"
+                )
+            )
+        }
+        vibrate(45)
+    }
+
+    fun runSecurityPolicyAudit() {
+        viewModelScope.launch {
+            _isPolicyAuditRunning.value = true
+            _systemAlertMessage.value = "🔍 Commencing Multi-Tier Policy Attestation Audit..."
+            vibrate(40)
+            delay(900)
+
+            val activeRulesCount = _securityPolicyRules.value.count { it.isEnabled }
+            val totalRules = _securityPolicyRules.value.size
+            val auditDigest = "0xAUDIT_" + UUID.randomUUID().toString().replace("-", "").take(10).uppercase()
+
+            repository.insertAuditLog(
+                AuditLogEntity(
+                    eventType = "POLICY_ATTESTATION_PASS",
+                    securityTier = "TIER-0 (Zero-Trust Enclave)",
+                    summary = "Policy audit completed: $activeRulesCount/$totalRules rules enforced under ${_policyEnforcementLevel.value.name} posture.",
+                    cryptographicProof = auditDigest,
+                    subAgentId = "ZERO-TRUST-ORACLE"
+                )
+            )
+
+            _isPolicyAuditRunning.value = false
+            _systemAlertMessage.value = "✓ Security Policy Audit Passed ($activeRulesCount/$totalRules Rules Verified)"
+            vibrate(70)
+        }
+    }
+
+    fun resetSecurityPoliciesToDefault() {
+        _securityPolicyRules.value = AgisArchitectureConstants.DEFAULT_SECURITY_POLICY_RULES
+        _policyEnforcementLevel.value = PolicyEnforcementLevel.STRICT
+        _systemAlertMessage.value = "✓ Security Policies Reset to Standard Hardened Baseline"
+        vibrate(30)
     }
 
 

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.NeuralCommandEntity
 import com.example.ui.animation.QuantumVolumetricButton
 import com.example.ui.animation.volumetricQuantumGlass
+import com.example.ui.components.CyberNodeArchitectureVisualizer
 import com.example.ui.components.NeuralIntentRoutingDashboard
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
@@ -37,7 +38,7 @@ fun NeuralCommandScreen(
     var promptInput by remember { mutableStateOf("") }
     var selectedDomain by remember { mutableStateOf("local.enclave.core") }
     var isCrossDomain by remember { mutableStateOf(false) }
-    var selectedSubTab by remember { mutableStateOf(0) } // 0: Intent Routing Topology & Diagnostics, 1: Intent Dispatch Studio
+    var selectedSubTab by remember { mutableStateOf(0) } // 0: Cyber-Node Architecture Canvas, 1: Intent Stream, 2: Dispatch Studio
 
     val pendingConfirmation by viewModel.pendingConfirmation.collectAsState()
     val neuralCommands by viewModel.neuralCommands.collectAsState()
@@ -45,6 +46,13 @@ fun NeuralCommandScreen(
     val intentStream by viewModel.neuralIntentStream.collectAsState()
     val topologyNodes by viewModel.topologyNodes.collectAsState()
     val selectedFilter by viewModel.selectedIntentFilter.collectAsState()
+
+    val cyberNodes by viewModel.cyberNodes.collectAsState()
+    val activeNeuralRoutes by viewModel.activeNeuralRoutes.collectAsState()
+    val selectedCyberRouteId by viewModel.selectedCyberRouteId.collectAsState()
+    val selectedCyberNodeId by viewModel.selectedCyberNodeId.collectAsState()
+    val activeHopIndex by viewModel.activeHopIndex.collectAsState()
+    val isRouteSimulationRunning by viewModel.isRouteSimulationRunning.collectAsState()
 
 
     val domainOptions = listOf(
@@ -214,8 +222,9 @@ fun NeuralCommandScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     listOf(
-                        "TOPOLOGY & INTENT STREAM",
-                        "INTENT DISPATCH STUDIO"
+                        "CYBER-NODE MESH",
+                        "INTENT STREAM",
+                        "DISPATCH STUDIO"
                     ).forEachIndexed { index, label ->
                         val isSelected = selectedSubTab == index
                         Box(
@@ -245,8 +254,23 @@ fun NeuralCommandScreen(
             }
         }
 
-        // Sub-Tab 0: Neural Intent Routing Diagnostic Dashboard
+        // Sub-Tab 0: Cyber-Node Architecture Canvas Visualization
         if (selectedSubTab == 0) {
+            item {
+                CyberNodeArchitectureVisualizer(
+                    cyberNodes = cyberNodes,
+                    routes = activeNeuralRoutes,
+                    selectedRouteId = selectedCyberRouteId,
+                    selectedNodeId = selectedCyberNodeId,
+                    activeHopIndex = activeHopIndex,
+                    isSimulationRunning = isRouteSimulationRunning,
+                    onSelectRoute = { routeId -> viewModel.selectCyberRoute(routeId) },
+                    onSelectNode = { nodeId -> viewModel.selectCyberNode(nodeId) },
+                    onDispatchPacket = { routeId -> viewModel.dispatchNeuralRoutePacket(routeId) }
+                )
+            }
+        } else if (selectedSubTab == 1) {
+            // Sub-Tab 1: Neural Intent Routing Diagnostic Dashboard
             item {
                 NeuralIntentRoutingDashboard(
                     intentStream = intentStream,
@@ -259,7 +283,7 @@ fun NeuralCommandScreen(
                 )
             }
         } else {
-            // Sub-Tab 1: Interactive Glass Input Pane & Execution Ledger
+            // Sub-Tab 2: Interactive Glass Input Pane & Execution Ledger
             item {
                 QuantumGlassCard(
                     borderColor = PhotonicCyan.copy(alpha = 0.4f),

@@ -149,6 +149,150 @@ fun DashboardScreen(
             }
         }
 
+        // Cyber-Node Architecture Canvas Spotlight Card
+        item {
+            QuantumGlassCard(
+                borderColor = PhotonicCyan.copy(alpha = 0.5f),
+                backgroundColor = SpaceCobaltGlassElevated,
+                onClick = { onNavigateToTab(1) }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Hub,
+                            contentDescription = "Cyber-Node Architecture",
+                            tint = PhotonicCyan,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "CYBER-NODE ARCHITECTURE CANVAS",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PhotonicCyan,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Dynamic Neural Intent Route Visualizer",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = AmbientWhite,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Navigate to Architecture",
+                        tint = OperationalEmerald
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Interactive biomorphic mesh dynamically paths multi-hop intent routes across 7 cyber tiers with traveling photon packets.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AmbientWhiteMuted,
+                    fontSize = 11.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    PhotonicBadge(
+                        text = "7 CYBER-NODES",
+                        signalColor = PhotonicCyan
+                    )
+                    PhotonicBadge(
+                        text = "4 NEURAL INTENT ROUTES",
+                        signalColor = OperationalEmerald
+                    )
+                    PhotonicBadge(
+                        text = "512-BIT ENCLAVE",
+                        signalColor = QuantumVioletLight
+                    )
+                }
+            }
+        }
+
+        // Real-Time Telemetry & Threat Dashboard Spotlight Card
+        item {
+            QuantumGlassCard(
+                borderColor = OperationalEmerald.copy(alpha = 0.5f),
+                backgroundColor = SpaceCobaltGlassElevated,
+                onClick = { onNavigateToTab(5) }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Analytics,
+                            contentDescription = "Telemetry & Threat Dashboard",
+                            tint = OperationalEmerald,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "REAL-TIME TELEMETRY & THREAT MATRIX",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = OperationalEmeraldLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Sanitization Throughput & Anomaly Waves",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = AmbientWhite,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Navigate to Validation",
+                        tint = OperationalEmerald
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Live multi-series area chart streaming ingress vs sanitized egress (KB/s), differential privacy ε=0.50 noise rates, and adversarial anomaly spectrum.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AmbientWhiteMuted,
+                    fontSize = 11.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    PhotonicBadge(
+                        text = "LIVE THROUGHPUT WAVES",
+                        signalColor = OperationalEmerald
+                    )
+                    PhotonicBadge(
+                        text = "ε = 0.50 DP NOISE",
+                        signalColor = PhotonicCyan
+                    )
+                    PhotonicBadge(
+                        text = "THREAT SPECTRUM",
+                        signalColor = ContainmentCrimson
+                    )
+                }
+            }
+        }
+
         // 6-Layer Architecture Quick Navigation Grid
         item {
             Column {

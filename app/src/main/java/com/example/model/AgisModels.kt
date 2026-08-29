@@ -126,3 +126,67 @@ data class NeuralTopologyNode(
     val isPrimaryCore: Boolean = false
 )
 
+data class CyberNode(
+    val id: String,
+    val name: String,
+    val shortLabel: String,
+    val tierNumber: Int,
+    val tierLabel: String,
+    val description: String,
+    val normalizedX: Float,
+    val normalizedY: Float,
+    val securityProtocol: String,
+    val latencyNs: Int,
+    val activeLoad: Float, // 0.0f to 1.0f
+    val isHardwareEnclave: Boolean = false,
+    val activePackets: Int = 0
+)
+
+data class CyberNodeRoute(
+    val id: String,
+    val name: String,
+    val intentType: String,
+    val description: String,
+    val nodeHops: List<String>,
+    val riskLevel: IntentRiskLevel,
+    val latencyMs: Int,
+    val cryptographicDigest: String,
+    val isSimulated: Boolean = false
+)
+
+enum class PolicyEnforcementLevel(val label: String) {
+    STRICT("Zero-Bypass Strict (Hardware Enclave Sealed)"),
+    BALANCED("Adaptive Zero-Trust (Attestation Monitored)"),
+    DEVELOPMENT("Sandbox Permissive (Full Telemetry Logged)")
+}
+
+data class SecurityPolicyRule(
+    val id: String,
+    val name: String,
+    val category: String, // "NEURAL_GATE", "ENCLAVE_CRYPTO", "TELEMETRY_PRIVACY", "CROSS_DOMAIN"
+    val description: String,
+    val isEnabled: Boolean = true,
+    val minimumTier: Int = 1,
+    val requiresBiometricConfirmation: Boolean = false,
+    val enforcementAction: String
+)
+
+data class TelemetryThroughputPoint(
+    val timestamp: Long = System.currentTimeMillis(),
+    val rawThroughputKbps: Float,
+    val sanitizedThroughputKbps: Float,
+    val packetsPerSec: Int,
+    val piiScrubbedRate: Int,
+    val threatAnomalyScore: Float, // 0.0 to 1.0
+    val differentialEpsilon: Float = 0.5f
+)
+
+data class ThreatCategoryMetric(
+    val categoryName: String,
+    val shortCode: String,
+    val incidentCount: Int,
+    val severityLevel: ThreatSeverity,
+    val riskRatio: Float, // 0.0 to 1.0
+    val accentColorHex: String = "#10B981"
+)
+

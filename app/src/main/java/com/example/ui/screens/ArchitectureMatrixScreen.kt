@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.AgisArchitectureConstants
 import com.example.model.ArchitectureComparison
+import com.example.ui.components.CyberNodeArchitectureVisualizer
 import com.example.ui.components.PhotonicBadge
 import com.example.ui.components.QuantumGlassCard
 import com.example.ui.theme.*
@@ -38,7 +39,14 @@ fun ArchitectureMatrixScreen(
 ) {
     val context = LocalContext.current
     val inspectedLayerId by viewModel.inspectedLayerId.collectAsState()
-    var viewMode by remember { mutableStateOf("COMPARISON") } // "COMPARISON" or "LAYERS" or "SCHEMA_JSON"
+    var viewMode by remember { mutableStateOf("CYBER_NODES") } // "CYBER_NODES" or "COMPARISON" or "LAYERS" or "SCHEMA_JSON"
+
+    val cyberNodes by viewModel.cyberNodes.collectAsState()
+    val activeNeuralRoutes by viewModel.activeNeuralRoutes.collectAsState()
+    val selectedCyberRouteId by viewModel.selectedCyberRouteId.collectAsState()
+    val selectedCyberNodeId by viewModel.selectedCyberNodeId.collectAsState()
+    val activeHopIndex by viewModel.activeHopIndex.collectAsState()
+    val isRouteSimulationRunning by viewModel.isRouteSimulationRunning.collectAsState()
 
     val currentLayer = AgisArchitectureConstants.ARCHITECTURE_LAYERS.firstOrNull { it.layerId == inspectedLayerId }
         ?: AgisArchitectureConstants.ARCHITECTURE_LAYERS.first()
@@ -68,7 +76,7 @@ fun ArchitectureMatrixScreen(
                             color = PhotonicCyanLight
                         )
                         Text(
-                            text = "2024 Base vs. 2045 Quantum Core",
+                            text = "Cyber-Node & Quantum Core Mesh",
                             style = MaterialTheme.typography.titleMedium,
                             color = AmbientWhite,
                             fontWeight = FontWeight.Bold
@@ -86,10 +94,13 @@ fun ArchitectureMatrixScreen(
 
                 // Mode Selector Tabs
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(
+                        "CYBER_NODES" to "Cyber-Node Canvas",
                         "COMPARISON" to "Matrix (2024/2045)",
                         "LAYERS" to "6-Layer Deep Specs",
                         "SCHEMA_JSON" to "JSON Schema"
@@ -97,7 +108,6 @@ fun ArchitectureMatrixScreen(
                         val isSelected = viewMode == mode
                         Box(
                             modifier = Modifier
-                                .weight(1f)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (isSelected) PhotonicCyan.copy(alpha = 0.25f) else SpaceCobaltGlassElevated)
                                 .border(
@@ -106,7 +116,7 @@ fun ArchitectureMatrixScreen(
                                     RoundedCornerShape(8.dp)
                                 )
                                 .clickable { viewMode = mode }
-                                .padding(vertical = 8.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -119,6 +129,23 @@ fun ArchitectureMatrixScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // Mode 0: Interactive Canvas Cyber-Node Architecture Visualizer
+        if (viewMode == "CYBER_NODES") {
+            item {
+                CyberNodeArchitectureVisualizer(
+                    cyberNodes = cyberNodes,
+                    routes = activeNeuralRoutes,
+                    selectedRouteId = selectedCyberRouteId,
+                    selectedNodeId = selectedCyberNodeId,
+                    activeHopIndex = activeHopIndex,
+                    isSimulationRunning = isRouteSimulationRunning,
+                    onSelectRoute = { routeId -> viewModel.selectCyberRoute(routeId) },
+                    onSelectNode = { nodeId -> viewModel.selectCyberNode(nodeId) },
+                    onDispatchPacket = { routeId -> viewModel.dispatchNeuralRoutePacket(routeId) }
+                )
             }
         }
 
