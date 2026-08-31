@@ -7,6 +7,7 @@
 ---
 
 ## 📑 Table of Contents
+
 1. [Executive Summary & Architectural Vision](#1-executive-summary--architectural-vision)
 2. [Zero-Trust Security Architecture](#2-zero-trust-security-architecture)
 3. [512-Bit Post-Quantum Cryptography & Enclave Engine](#3-512-bit-post-quantum-cryptography--enclave-engine)
@@ -23,11 +24,11 @@
 
 ## 1. Executive Summary & Architectural Vision
 
-**AGIS 2045** is a futuristic, defense-grade human-machine operating environment crafted in Kotlin and Jetpack Compose for Android. It bridges biological neural command patterns with mathematically isolated, quantum-resistant execution enclaves. 
+**AGIS 2045** is a futuristic, defense-grade human-machine operating environment crafted in Kotlin and Jetpack Compose for Android. It bridges biological neural command patterns with mathematically isolated, quantum-resistant execution enclaves.
 
 Every user action, AI sub-agent delegation, inter-process communication, and network egress payload is continuously attested, cryptographically sealed, and immutably audited under a zero-trust sovereign computing paradigm.
 
-```
+```text
 +-------------------------------------------------------------------------------+
 |                         OPERATOR NEURAL INTERACTION                           |
 |   (Electro-Neural Waveforms • Biomorphic Resonance • Direct Intent Dispatch)  |
@@ -65,6 +66,7 @@ Every user action, AI sub-agent delegation, inter-process communication, and net
 AGIS 2045 enforces the absolute mandate: **"Never Trust, Always Attest, Mathematically Prove."**
 
 ### 2.1 Enforcement Posture Profiles
+
 The system allows dynamic switching between three certified operational postures:
 
 1. **Zero-Bypass Strict (Default / Hardened)**:
@@ -77,10 +79,11 @@ The system allows dynamic switching between three certified operational postures
    - Isolated container execution with detailed diagnostic logs and relaxed operator hold queues.
 
 ### 2.2 Security Policy Rules Matrix
+
 The policy engine features interactive rule toggling and verification:
 
 | Policy ID | Rule Name | Category | Minimum Tier | Biometric Gating | Enforcement Action |
-|---|---|---|:---:|:---:|---|
+| --- | --- | --- | :---: | :---: | --- |
 | `POL_CROSS_DOMAIN_GATE` | Explicit Neural Gate Confirmation | Neural Gate | Tier 0 | **Mandatory** | Holds execution in biometric queue; issues haptic alert |
 | `POL_ENCLAVE_KYBER_512` | 512-bit PQ Enclave Sealing | Enclave Crypto | Tier 0 | **Mandatory** | Rejects non-enclave keys; enforces 60s dynamic rotation |
 | `POL_DIFF_PRIVACY_EPSILON` | Differential Privacy Telemetry | Telemetry Privacy | Tier 1 | Optional | Injects Laplace noise ($\epsilon = 0.5$); masks tokens with SHA-256 |
@@ -93,7 +96,7 @@ The policy engine features interactive rule toggling and verification:
 
 To withstand Shor's algorithm and quantum cryptanalysis, AGIS 2045 executes cryptographic operations within a simulated isolated hardware security enclave (eUICC / ARM TrustZone / Android StrongBox).
 
-```
+```text
   +---------------------------------------------------------------------+
   |                ISOLATED HARDWARE ENCLAVE MEMORY                     |
   |                                                                     |
@@ -142,7 +145,7 @@ $$\mathcal{M}(x) = f(x) + \text{Laplace}\left(0, \frac{\Delta f}{\epsilon}\right
 
 The **Cyber-Node Canvas** provides a dynamic 2D/2.5D visual simulation of system data flow:
 
-```
+```text
   (T1: Composery) ──────> (T2: ViewModel) ──────> (T3: Policy Gate)
                                                           │
          ┌────────────────────────────────────────────────┴───────────────┐
@@ -166,7 +169,7 @@ The **Cyber-Node Canvas** provides a dynamic 2D/2.5D visual simulation of system
 ## 6. The 6-Layer Architecture & Screen Modules
 
 | Layer | Screen Name | Functional Purpose | Key Highlights |
-|:---:|---|---|---|
+| :---: | --- | --- | --- |
 | **L1** | **Quantum Glass Interface** | Volumetric Translucent Display | 2D/2.5D/3D depth modes, non-occluding telemetry |
 | **L2** | **Neural Command Center** | Intent Routing & Waveform Monitor | Live biomorphic waveforms, sub-agent dispatch studio |
 | **L3** | **Architecture Matrix** | 2024 Base vs. 2045 Evolution | Side-by-side comparative matrices, interactive Cyber-Node canvas |
@@ -179,19 +182,19 @@ The **Cyber-Node Canvas** provides a dynamic 2D/2.5D visual simulation of system
 ## 7. Photonic Signal Design System
 
 | Signal Name | Hex Code | Semantic Role & Purpose |
-|---|---|---|
+| --- | --- | --- |
 | **Operational Emerald** | `#10B981` | Nominal telemetry, verified policy gates, passed audits |
 | **Photonic Cyan** | `#00F5FF` | Active neural connectivity, quantum coherence, live route hops |
 | **Containment Crimson** | `#FF2A55` | Threat containment, quarantined payloads, security alerts |
 | **Quantum Violet** | `#A855F7` | Post-quantum enclave sealing, 512-bit lattice keys |
 | **Solar Amber** | `#FFB703` | Policy re-evaluations, elevated risk warnings, sandbox mode |
-| **Space Cobalt (Canvas)**| `#050B18` | Ultra-deep high-contrast background canvas |
+| **Space Cobalt (Canvas)** | `#050B18` | Ultra-deep high-contrast background canvas |
 
 ---
 
 ## 8. Project Structure & Key Components
 
-```
+```text
 app/src/main/java/com/example/
 ├── MainActivity.kt                      # Main App Shell & Edge-to-Edge Container
 ├── data/
@@ -230,6 +233,7 @@ app/src/main/java/com/example/
 ## 9. Prerequisites, Build & Installation Guide
 
 ### 9.1 Prerequisites
+
 - **JDK**: Java 17 or Java 21 (Temurin / OpenJDK)
 - **Android SDK**: Compile SDK `34` (Android 14+), Min SDK `26` (Android 8.0 Oreo+)
 - **Gradle**: 8.7+ (Android Gradle Plugin 8.5.0+)
@@ -263,6 +267,7 @@ adb shell am start -n com.example/.MainActivity
 ```
 
 ### 9.4 Opening in Android Studio
+
 1. Launch **Android Studio** (Koala / Ladybug or newer recommended).
 2. Select **Open** and choose the root project directory.
 3. Allow Gradle to sync the Version Catalog (`gradle/libs.versions.toml`).
@@ -275,12 +280,14 @@ adb shell am start -n com.example/.MainActivity
 AGIS 2045 includes comprehensive local JVM unit tests, Robolectric simulations, and visual regression tests.
 
 ### 10.1 Running Unit & Robolectric Tests
+
 ```bash
 # Executes all unit and Robolectric lifecycle tests
 gradle :app:testDebugUnitTest
 ```
 
 ### 10.2 Verifying Visual Layouts (Roborazzi Screenshot Testing)
+
 ```bash
 # Verifies recorded screenshots against the current UI state
 gradle :app:verifyRoborazziDebug
