@@ -211,6 +211,7 @@ fun QuantumVolumetricButton(
     primaryColor: Color = PhotonicCyan,
     secondaryColor: Color = OperationalEmerald,
     containerColor: Color = SpaceCobaltGlassElevated,
+    glowColor: Color = primaryColor,
     shapeRadius: Dp = 12.dp
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -218,6 +219,7 @@ fun QuantumVolumetricButton(
     val volumetricState = rememberVolumetricInteractiveState(interactionSource)
 
     val buttonShape = RoundedCornerShape(shapeRadius)
+    val effectivePrimary = if (glowColor != PhotonicCyan) glowColor else primaryColor
 
     Box(
         modifier = modifier
@@ -226,7 +228,7 @@ fun QuantumVolumetricButton(
                 maxTiltAngle = 8f,
                 elevation = if (isPressed) 2.dp else 6.dp,
                 shapeRadius = shapeRadius,
-                primarySignalColor = primaryColor,
+                primarySignalColor = effectivePrimary,
                 secondarySignalColor = secondaryColor,
                 glassBackground = containerColor,
                 scaleOnHover = 1.03f

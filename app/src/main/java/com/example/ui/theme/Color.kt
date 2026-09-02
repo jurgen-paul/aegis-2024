@@ -38,6 +38,10 @@ val SolarAmber = Color(0xFFFFB703)
 val SolarAmberGlow = Color(0x33FFB703)
 val SolarAmberDark = Color(0xFFD97706)
 
+// Photonic Amber Aliases
+val PhotonicAmber = SolarAmber
+val PhotonicAmberDark = SolarAmberDark
+
 val TextDimmed = Color(0xFF94A3B8)
 
 

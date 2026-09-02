@@ -299,6 +299,7 @@ fun PhotonicBadge(
     signalColor: Color,
     icon: ImageVector? = null,
     enablePulse: Boolean = false,
+    fontSize: androidx.compose.ui.unit.TextUnit? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -327,7 +328,7 @@ fun PhotonicBadge(
             }
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelSmall,
+                style = if (fontSize != null) MaterialTheme.typography.labelSmall.copy(fontSize = fontSize) else MaterialTheme.typography.labelSmall,
                 color = signalColor,
                 fontWeight = FontWeight.SemiBold
             )

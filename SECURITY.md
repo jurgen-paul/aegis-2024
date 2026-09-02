@@ -1,27 +1,27 @@
-# AGIS 2045: Zero-Trust Security Architecture & Post-Quantum Specifications
+# AGIS 2045: Sovereign Zero-Trust Security Architecture & Post-Quantum Security Policy
 
-> **Official Zero-Trust Architecture, Biometric Credential Manager Enclave Integration, Post-Quantum Cryptography, and Data Sanitization Specifications for the AGIS 2045 Project.**
+> **Official Zero-Trust Architecture, Biometric Credential Manager Enclave Integration, Post-Quantum Cryptography (NIST FIPS 203/204), Real-Time Telemetry Anomaly Sentinel, and Vulnerability Disclosure Policy for the AGIS 2045 Platform.**
 
 ---
 
 ## 📑 Table of Contents
-1. [Zero-Trust Security Principles & Architectural Axioms](#1-zero-trust-security-principles--architectural-axioms)
+1. [Zero-Trust Principles & Sovereign Architectural Axioms](#1-zero-trust-principles--sovereign-architectural-axioms)
 2. [Biometric Credential Manager & Hardware Enclave Integration](#2-biometric-credential-manager--hardware-enclave-integration)
 3. [512-Bit Post-Quantum Cryptography (PQC) & Lattice Specifications](#3-512-bit-post-quantum-cryptography-pqc--lattice-specifications)
 4. [Hardware Root of Trust & Memory Barrier Isolation](#4-hardware-root-of-trust--memory-barrier-isolation)
-5. [Telemetry Sanitization & Differential Privacy Protocols](#5-telemetry-sanitization--differential-privacy-protocols)
+5. [Telemetry Sanitization, Sentinel Anomaly Engine & Differential Privacy](#5-telemetry-sanitization-sentinel-anomaly-engine--differential-privacy)
 6. [Multi-Tier Cyber-Node Security Boundaries](#6-multi-tier-cyber-node-security-boundaries)
-7. [Threat Model & Heuristic Containment Matrix](#7-threat-model--heuristic-containment-matrix)
+7. [Threat Modeling & Heuristic Quarantine Matrix](#7-threat-model--heuristic-quarantine-matrix)
 8. [Audit Logging & Cryptographic Non-Repudiation](#8-audit-logging--cryptographic-non-repudiation)
-9. [Vulnerability Disclosure & SLA Commitments](#9-vulnerability-disclosure--sla-commitments)
+9. [Vulnerability Disclosure & Security SLA Commitments](#9-vulnerability-disclosure--security-sla-commitments)
 
 ---
 
-## 1. Zero-Trust Security Principles & Architectural Axioms
+## 1. Zero-Trust Principles & Sovereign Architectural Axioms
 
-AGIS 2045 enforces the sovereign zero-trust operational axiom: **"Never Trust, Always Attest, Mathematically Prove."**
+AGIS 2045 enforces the absolute zero-trust operational axiom: **"Never Trust, Always Attest, Mathematically Prove."**
 
-Under this architecture, perimeter-based security models are deprecated in favor of micro-segmented, continuous, identity-bound validation. Every operational vector—from operator biometric input to inter-agent delegation and database writes—is treated as untrusted until verified by a cryptographic chain of custody.
+Perimeter-based security models are completely deprecated in favor of micro-segmented, continuous, identity-bound validation. Every operational vector—from operator biometric input to inter-agent delegation and database writes—is treated as untrusted until verified by a cryptographic chain of custody.
 
 ```
        +──────────────────────────────────────────────────────────────────────────+
@@ -49,7 +49,7 @@ Under this architecture, perimeter-based security models are deprecated in favor
                                             ▼
        +──────────────────────────────────────────────────────────────────────────+
        │                  DIFFERENTIAL PRIVACY & DEFENSE SHIELD                   │
-       │     (Laplace Noise Perturbation ε = 0.5 • Dynamic Threat Quarantine)     │
+       │     (Laplace Noise Perturbation ε = 0.5 • Sentinel Real-Time Alerts)     │
        +──────────────────────────────────────────────────────────────────────────+
 ```
 
@@ -63,7 +63,7 @@ Under this architecture, perimeter-based security models are deprecated in favor
 
 ## 2. Biometric Credential Manager & Hardware Enclave Integration
 
-A foundational breakthrough of the AGIS 2045 architecture is the direct hardware binding between the Android **Jetpack CredentialManager / BiometricPrompt subsystem** and the **512-bit Post-Quantum Enclave Storage**.
+The AGIS 2045 architecture establishes direct hardware binding between the Android **Jetpack CredentialManager / BiometricPrompt subsystem** and the **512-bit Post-Quantum Enclave Storage**.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -136,7 +136,7 @@ To guarantee mathematical forward secrecy against both Classical and Fault-Toler
 The enclave lifecycle engine maintains an automated coroutine timer that triggers key re-generation every 60 seconds:
 1. The active session key transitions to a `GRACE_PERIOD` state (5 seconds for in-flight packet decoding).
 2. A new Kyber-1024 public/private keypair is generated within the hardware enclave.
-3. The previous key material is wiped via 3-pass zeroization.
+3. The previous key material is wiped via 4-pass zeroization.
 4. A signed rotation audit record is written to the immutable ledger with a Dilithium-5 proof digest.
 
 ---
@@ -169,9 +169,9 @@ AGIS 2045 enforces physical and architectural isolation between the userland int
 
 ---
 
-## 5. Telemetry Sanitization & Differential Privacy Protocols
+## 5. Telemetry Sanitization, Sentinel Anomaly Engine & Differential Privacy
 
-Before diagnostic telemetry, performance logs, or neural resonance metrics are transmitted across system boundaries, they are processed by the **Differential Privacy Sanitization Core**.
+Before diagnostic telemetry, performance logs, or neural resonance metrics are transmitted across system boundaries, they are processed by the **Differential Privacy Sanitization Sentinel Core**.
 
 ### 5.1 Mathematical Privacy Formulation
 To protect operator privacy and prevent model inversion attacks, Laplace noise is added to all numerical telemetry vectors:
@@ -181,10 +181,13 @@ $$\mathcal{M}(x) = f(x) + \text{Laplace}\left(0, \frac{\Delta f}{\epsilon}\right
 - **$\epsilon$ (Epsilon Privacy Budget)**: Hardened at $\mathbf{\epsilon = 0.5}$, guaranteeing high differential privacy guarantees.
 - **$\delta$ (Delta Probability Bound)**: Bounded at $\mathbf{\delta = 10^{-5}}$ across all aggregate streams.
 
-### 5.2 Token & PII Scrubbing
-1. **PII Stripping**: IP addresses, MAC addresses, device serials, and email identifiers are masked using SHA-256 one-way cryptographic digests.
-2. **Biometric Quantization**: Raw neural resonance and galvanic waveforms are normalized into discretized range buckets, preventing biometric reconstruction.
-3. **Token Sanitization**: Bearer tokens and session authorization headers are stripped prior to disk caching or external network egress.
+### 5.2 Real-Time Sentinel Anomaly Detection & Dispatch
+The telemetry sanitization engine actively detects high-risk anomaly patterns:
+1. **Unmasked PII & Egress Leaks**: Scans and scrubs unencrypted IP addresses, subnet headers, and device IDs with `[REDACTED_BY_SANITIZER_PROOF]`.
+2. **Adversarial Prompt Injections**: Intercepts `ignore instructions`, `override`, `jailbreak`, and `dump registers` directives in real-time, substituting sanitized intent representations.
+3. **Differential Privacy Budget Collapse**: Flags any degradation where $\epsilon < 0.1$, injecting fresh entropy.
+4. **Enclave Memory Exfiltration Probes**: Identifies unauthorized `0x7FFF` register reads and bearer tokens, quarantining the payload.
+5. **System Notifications & Heads-Up Alerts**: Generates high-priority Android notification alerts with cryptographic proof digests and deep-linked containment controls.
 
 ---
 
@@ -204,7 +207,7 @@ The AGIS 2045 routing mesh partitions system execution across 7 distinct Cyber-N
 
 ---
 
-## 7. Threat Model & Heuristic Containment Matrix
+## 7. Threat Model & Heuristic Quarantine Matrix
 
 AGIS 2045 implements real-time heuristic anomaly detection to contain hostile payloads instantly:
 
@@ -224,7 +227,7 @@ All system activities—including policy modifications, key rotations, threat qu
 - **Ledger Entity Schema**:
   - `id`: Monotonically increasing primary key.
   - `timestamp`: Epoch millisecond timestamp.
-  - `eventType`: Canonical event classifier (`POLICY_POSTURE_CHANGED`, `ENCLAVE_KEY_ROTATED`, `THREAT_QUARANTINED`).
+  - `eventType`: Canonical event classifier (`POLICY_POSTURE_CHANGED`, `ENCLAVE_KEY_ROTATED`, `THREAT_QUARANTINED`, `TELEMETRY_ANOMALY_INTERCEPTED`).
   - `securityTier`: Execution tier identifier ($T_0$ through $T_7$).
   - `summary`: Descriptive event narrative.
   - `cryptographicProof`: 512-bit Dilithium-5 digital signature hash.
@@ -233,7 +236,7 @@ All system activities—including policy modifications, key rotations, threat qu
 
 ---
 
-## 9. Vulnerability Disclosure & SLA Commitments
+## 9. Vulnerability Disclosure & Security SLA Commitments
 
 We welcome responsible security research on the AGIS 2045 platform.
 
